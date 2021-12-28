@@ -1,9 +1,15 @@
 <?php
 
-// To-do: starting using namespace instead of require etc.
 require("RefundRequest.php");
 class Connector
 {
+    private $providerAPI = null;
+
+    public function __construct(ProviderAPIInterface $providerAPI)
+    {
+        $this->providerAPI = $providerAPI;
+    }
+
     function listPaymentMethods(): string
     {
         return json_encode([
@@ -64,6 +70,12 @@ class Connector
         ]);
     }
 
+    /**
+     * Validates the request Body for a refund and process the refund
+     *
+     * @param array $requestBody
+     * @return string
+     */
     function refundPayment(array $requestBody): string
     {
         $refundRequest = new RefundRequest(
@@ -73,42 +85,44 @@ class Connector
             $requestBody['tid'],
             (float) $requestBody['value'],
             $requestBody['transactionId'],
-            $requestBody['recipients']
+            $requestBody['recipients'],
+            $requestBody['sandboxMode']
         );
 
         $response = $this->processRefund($refundRequest);
 
 
-        return json_encode($refundRequest->toArray());
+        return json_encode($response);
     }
 
     /**
-     * This function process the refund request and return the proper response body
-     *
+     * This function should reach out to the provider to process the refund request
+     * and return the formatted response body.
      * @param RefundRequest $request
-     * @return void
+     * @return array
      */
-    private function processRefund(RefundRequest $request)
+    private function processRefund(RefundRequest $request): array
     {
-        // reach out to the provider API to process the refund using information from the request
-        $providerResponse = $this->providerAPI->processRefund($request);
+        // format request info according to provider definition
+        $requestAsArray = $request->toArray();
 
+        // call provider to process the request
+        $providerResponseArray = $this->providerAPI->processRefund($requestAsArray);
+
+        // format response according to PPP definitions
         $formattedResponse = [
-            "requestId" => $request->requestId(),
             "paymentId" => $request->paymentId(),
-            "responseData" => [
-                "statusCode" => $providerResponse->statusCode(),
-                "contentType" => $providerResponse->contentType(),
-                "content" => $providerResponse->content(),
-            ],
+            "requestId" => $request->requestId(),
+            "refundId" => $providerResponseArray["refundId"],
+            "value" => $providerResponseArray["value"],
         ];
 
-        if (isset($providerResponse->code())) {
-            $formattedResponse["code"] = $providerResponse->code();
+        if (!is_null($providerResponseArray["code"])) {
+            $formattedResponse["code"] = $providerResponseArray["code"];
         }
 
-        if (isset($providerResponse->message())) {
-            $formattedResponse["message"] = $providerResponse->message();
+        if (!is_null($providerResponseArray["message"])) {
+            $formattedResponse["message"] = $providerResponseArray["message"];
         }
 
         return $formattedResponse;

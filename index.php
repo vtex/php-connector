@@ -1,8 +1,10 @@
 <?php
 
 require("Connector.php");
+require("ProviderAPIMock.php");
 
-$connectorAPI = new Connector;
+$providerAPI = new ProviderAPIMock;
+$connectorAPI = new Connector($providerAPI);
 
 // handle requests by verb and path
 $verb = $_SERVER['REQUEST_METHOD'];
