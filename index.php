@@ -54,7 +54,11 @@ if ($verb === 'GET') {
             break;
 
         case 'settlements':
-            $response = json_encode("test settlements");
+            $requestBody = json_decode(file_get_contents('php://input'), true);
+            $refundResponse = $connector->capturePayment($requestBody);
+            $responseCode = $refundResponse["responseCode"];
+            http_response_code($responseCode);
+            $response = $refundResponse["responseData"];
             break;
 
         case 'refunds':

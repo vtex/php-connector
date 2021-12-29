@@ -1,7 +1,8 @@
 <?php
 
-require("RefundRequest.php");
+require("CaptureRequest.php");
 require("CancellationRequest.php");
+require("RefundRequest.php");
 class Connector
 {
     private $providerAPI = null;
@@ -80,16 +81,20 @@ class Connector
      */
     function refundPayment(array $requestBody): array
     {
-        $request = new RefundRequest(
-            $requestBody['requestId'],
-            $requestBody['settleId'],
-            $requestBody['paymentId'],
-            $requestBody['tid'],
-            (float) $requestBody['value'],
-            $requestBody['transactionId'],
-            $requestBody['recipients'],
-            $requestBody['sandboxMode']
-        );
+        try {
+            $request = new RefundRequest(
+                $requestBody['requestId'],
+                $requestBody['settleId'],
+                $requestBody['paymentId'],
+                $requestBody['tid'],
+                (float) $requestBody['value'],
+                $requestBody['transactionId'],
+                $requestBody['recipients'],
+                $requestBody['sandboxMode']
+            );
+        } catch (\Throwable $th) {
+            throw new Exception('Invalid Request Body', 400);
+        }
 
         // assuming that provider expects an array as input
         $requestAsArray = $request->toArray();
@@ -122,12 +127,16 @@ class Connector
 
     public function cancelPayment(array $requestBody): array
     {
-        $request = new CancellationRequest(
-            $requestBody['paymentId'],
-            $requestBody['requestId'],
-            $requestBody['authorizationId'],
-            $requestBody['sandboxMode']
-        );
+        try {
+            $request = new CancellationRequest(
+                $requestBody['paymentId'],
+                $requestBody['requestId'],
+                $requestBody['authorizationId'],
+                $requestBody['sandboxMode']
+            );
+        } catch (\Throwable $th) {
+            throw new Exception('Invalid Request Body', 400);
+        }
 
         // format request info according to provider definition
         $requestAsArray = $request->toArray();
@@ -140,6 +149,51 @@ class Connector
             "paymentId" => $request->paymentId(),
             "requestId" => $request->requestId(),
             "cancellationId" => $providerResponseArray["cancellationId"],
+        ];
+
+        if (!is_null($providerResponseArray["code"])) {
+            $formattedResponse["code"] = $providerResponseArray["code"];
+        }
+
+        if (!is_null($providerResponseArray["message"])) {
+            $formattedResponse["message"] = $providerResponseArray["message"];
+        }
+
+        return [
+            "responseCode" => $providerResponseArray["responseCode"],
+            "responseData" => json_encode($formattedResponse)
+        ];
+    }
+
+    public function capturePayment(array $requestBody): array
+    {
+        try {
+            $request = new CaptureRequest(
+                $requestBody['transactionId'],
+                $requestBody['requestId'],
+                $requestBody['paymentId'],
+                (float) $requestBody['value'],
+                $requestBody['authorizationId'],
+                $requestBody['tid'],
+                $requestBody['recipients'],
+                $requestBody['sandboxMode']
+            );
+        } catch (\Throwable $th) {
+            throw new Exception('Invalid Request Body', 400);
+        }
+
+        // assuming that provider expects an array as input
+        $requestAsArray = $request->toArray();
+
+        // call provider to process the request
+        $providerResponseArray = $this->providerAPI->processCapture($requestAsArray);
+
+        // format response according to PPP definitions
+        $formattedResponse = [
+            "paymentId" => $request->paymentId(),
+            "requestId" => $request->requestId(),
+            "settleId" => $providerResponseArray["settleId"],
+            "value" => $providerResponseArray["value"],
         ];
 
         if (!is_null($providerResponseArray["code"])) {
