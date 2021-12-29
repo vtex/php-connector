@@ -4,7 +4,7 @@ require("Connector.php");
 require("ProviderAPIMock.php");
 
 $providerAPI = new ProviderAPIMock;
-$connectorAPI = new Connector($providerAPI);
+$connector = new Connector($providerAPI);
 
 // handle requests by verb and path
 $verb = $_SERVER['REQUEST_METHOD'];
@@ -29,11 +29,11 @@ set_exception_handler(function ($e) {
 if ($verb === 'GET') {
     switch ($path) {
         case 'payment-methods':
-            $response = $connectorAPI->listPaymentMethods();
+            $response = $connector->listPaymentMethods();
             break;
 
         case 'manifest':
-            $response = $connectorAPI->listPaymentProviderManifest();
+            $response = $connector->listPaymentProviderManifest();
             break;
 
         default:
@@ -46,7 +46,11 @@ if ($verb === 'GET') {
             break;
 
         case 'cancellations':
-            $response = json_encode("test cancellations");
+            $requestBody = json_decode(file_get_contents('php://input'), true);
+            $cancellationResponse = $connector->cancelPayment($requestBody);
+            $responseCode = $cancellationResponse["responseCode"];
+            http_response_code($responseCode);
+            $response = $cancellationResponse["responseData"];
             break;
 
         case 'settlements':
@@ -55,7 +59,10 @@ if ($verb === 'GET') {
 
         case 'refunds':
             $requestBody = json_decode(file_get_contents('php://input'), true);
-            $response = $connectorAPI->refundPayment($requestBody);
+            $refundResponse = $connector->refundPayment($requestBody);
+            $responseCode = $refundResponse["responseCode"];
+            http_response_code($responseCode);
+            $response = $refundResponse["responseData"];
             break;
 
         default:

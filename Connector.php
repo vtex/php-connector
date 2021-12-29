@@ -1,6 +1,7 @@
 <?php
 
 require("RefundRequest.php");
+require("CancellationRequest.php");
 class Connector
 {
     private $providerAPI = null;
@@ -71,14 +72,15 @@ class Connector
     }
 
     /**
-     * Validates the request Body for a refund and process the refund
+     * This function validates the request body and reaches out to the provider to process
+     * the refund request and return the formatted response body.
      *
      * @param array $requestBody
      * @return string
      */
-    function refundPayment(array $requestBody): string
+    function refundPayment(array $requestBody): array
     {
-        $refundRequest = new RefundRequest(
+        $request = new RefundRequest(
             $requestBody['requestId'],
             $requestBody['settleId'],
             $requestBody['paymentId'],
@@ -89,21 +91,7 @@ class Connector
             $requestBody['sandboxMode']
         );
 
-        $response = $this->processRefund($refundRequest);
-
-
-        return json_encode($response);
-    }
-
-    /**
-     * This function should reach out to the provider to process the refund request
-     * and return the formatted response body.
-     * @param RefundRequest $request
-     * @return array
-     */
-    private function processRefund(RefundRequest $request): array
-    {
-        // format request info according to provider definition
+        // assuming that provider expects an array as input
         $requestAsArray = $request->toArray();
 
         // call provider to process the request
@@ -125,6 +113,46 @@ class Connector
             $formattedResponse["message"] = $providerResponseArray["message"];
         }
 
-        return $formattedResponse;
+        return [
+            "responseCode" => $providerResponseArray["responseCode"],
+            "responseData" => json_encode($formattedResponse)
+        ];
+
+    }
+
+    public function cancelPayment(array $requestBody): array
+    {
+        $request = new CancellationRequest(
+            $requestBody['paymentId'],
+            $requestBody['requestId'],
+            $requestBody['authorizationId'],
+            $requestBody['sandboxMode']
+        );
+
+        // format request info according to provider definition
+        $requestAsArray = $request->toArray();
+
+        // call provider to process the request
+        $providerResponseArray = $this->providerAPI->processCancellation($requestAsArray);
+
+        // format response according to PPP definitions
+        $formattedResponse = [
+            "paymentId" => $request->paymentId(),
+            "requestId" => $request->requestId(),
+            "cancellationId" => $providerResponseArray["cancellationId"],
+        ];
+
+        if (!is_null($providerResponseArray["code"])) {
+            $formattedResponse["code"] = $providerResponseArray["code"];
+        }
+
+        if (!is_null($providerResponseArray["message"])) {
+            $formattedResponse["message"] = $providerResponseArray["message"];
+        }
+
+        return [
+            "responseCode" => $providerResponseArray["responseCode"],
+            "responseData" => json_encode($formattedResponse)
+        ];
     }
 }
