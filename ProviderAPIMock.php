@@ -39,7 +39,7 @@ class ProviderAPIMock implements ProviderAPIInterface
      *      ]
      * @return array
      */
-    public function processRefund($requestArray): array
+    public function processRefund(array $requestArray): array
     {
         if ($requestArray["value"] > 100) {
             try {
@@ -81,7 +81,7 @@ class ProviderAPIMock implements ProviderAPIInterface
     }
 
 
-    public function processCancellation($requestArray): array
+    public function processCancellation(array $requestArray): array
     {
         $cancellationId = $this->nextCancellationId();
 
@@ -98,6 +98,23 @@ class ProviderAPIMock implements ProviderAPIInterface
     }
 
     private function nextCancellationId(): string
+    {
+        return bin2hex(random_bytes(10));
+    }
+
+    public function processCapture(array $requestArray): array
+    {
+        $captureId = $this->nextCaptureId();
+
+        return [
+            "settleId" => $captureId,
+            "value" => $requestArray["value"],
+            "message" => "Successfully settled",
+            "responseCode" => 200
+        ];
+    }
+
+    private function nextCaptureId(): string
     {
         return bin2hex(random_bytes(10));
     }
