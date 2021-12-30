@@ -1,5 +1,5 @@
 {
-    "name": "php-connector",
+    "name": "michelly.teixeira/php-connector",
     "description": "API that connects a payment provider to vtex, according to PPP specification",
     "type": "project",
     "autoload": {
