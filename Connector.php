@@ -216,7 +216,7 @@ class Connector
         ];
     }
 
-    public function createPayment(array $requestBody): array
+    public function createPayment(array $requestBody): string
     {
         try {
             $card = new Card(
@@ -331,9 +331,18 @@ class Connector
                 $requestBody['callbackUrl'],
                 $requestBody['returnUrl']
             );
+
         } catch (\Throwable $th) {
             throw new Exception('Invalid Request Body', 400);
         }
-        return [];
+        // formats request according to provider definition
+        //$requestAsArray = $request->toArray();
+        $requestAsArray = [];
+
+        // call provider to process the request
+        $providerResponseArray = $this->providerAPI->createPayment($requestAsArray);
+
+        // returns response formatted according to PPP definitions
+        return json_encode($providerResponseArray);
     }
 }

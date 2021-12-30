@@ -118,4 +118,22 @@ class ProviderAPIMock implements ProviderAPIInterface
     {
         return bin2hex(random_bytes(10));
     }
+
+    public function createPayment($request): array
+    {
+        return [
+            "paymentId" => "01693EB95BE443AC85874E395CD91565",
+            "status" => "approved",
+            "authorizationId" => "AUT-09DC5E8F03",
+            "tid" => "TID-7B58BE1A08",
+            "nsu" => "NSU-107521E866",
+            "acquirer" => "TestPay",
+            "code" => "200",
+            "message" => null,
+            "delayToAutoSettle" => 21600,
+            "delayToAutoSettleAfterAntifraud" => 1800,
+            "delayToCancel" => 21600,
+            "maxValue" => 1000,
+        ];
+    }
 }
