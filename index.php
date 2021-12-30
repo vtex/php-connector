@@ -42,6 +42,8 @@ if ($verb === 'GET') {
 } elseif ($verb === 'POST') {
     switch ($path) {
         case 'payments':
+            $requestBody = json_decode(file_get_contents('php://input'), true);
+            $connector->createPayment($requestBody);
             $response = json_encode("test-payments");
             break;
 
