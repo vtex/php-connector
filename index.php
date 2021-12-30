@@ -8,7 +8,7 @@ $connector = new Connector($providerAPI);
 
 // handle requests by verb and path
 $verb = $_SERVER['REQUEST_METHOD'];
-$urlPieces = explode('/', $_SERVER['PATH_INFO']);
+$urlPieces = explode('/', $_SERVER['REQUEST_URI']);
 
 // this does not work for 'inbound-requests/:action'
 $path = end($urlPieces);
