@@ -79,4 +79,4 @@ if ($verb === 'GET') {
 
 header("Content-Type: application/json");
 header("Accept: application/json");
-echo $path;
+echo $response;
