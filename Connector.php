@@ -272,36 +272,41 @@ class Connector
                         (float) $item['price'],
                         (int) $item['quantity'],
                         (int) $item['discount'],
-                        $item['deliveryType'],
-                        $item['categoryId'],
-                        $item['sellerId'],
-                        (float) $item['taxRate'],
-                        (float) $item['taxValue'],
+                        $item['deliveryType'] ?? null,
+                        $item['categoryId'] ?? null,
+                        $item['sellerId'] ?? null,
+                        isset($item['taxRate']) ? (float) $item['taxRate'] : null,
+                        isset($item['taxValue']) ? (float) $item['taxValue'] : null,
                     );
                 },
                 $requestBody['miniCart']['items']
             );
-            $recipients = array_map(
-                function ($recipient) {
-                    return new Recipient(
-                        $recipient['id'],
-                        $recipient['name'],
-                        $recipient['documentType'],
-                        $recipient['document'],
-                        $recipient['role'],
-                        $recipient['amount'],
-                        $recipient['chargeProcessingFee'],
-                        $recipient['chargebackLiable']
-                    );
-                },
-                $requestBody['recipients']
-            );
+
+            $recipients = [];
+
+            if (isset($requestBody['recipients'])) {
+                $recipients = array_map(
+                    function ($recipient) {
+                        return new Recipient(
+                            $recipient['id'],
+                            $recipient['name'],
+                            $recipient['documentType'],
+                            $recipient['document'],
+                            $recipient['role'],
+                            $recipient['amount'],
+                            $recipient['chargeProcessingFee'],
+                            $recipient['chargebackLiable']
+                        );
+                    },
+                    $requestBody['recipients']
+                );
+            }
 
             $request = new PaymentRequest(
                 $requestBody['reference'],
                 $requestBody['orderId'],
                 $requestBody['shopperInteraction'],
-                $requestBody['verificationOnly'],
+                $requestBody['verificationOnly'] ?? false,
                 $requestBody['transactionId'],
                 $requestBody['paymentId'],
                 $requestBody['paymentMethod'],

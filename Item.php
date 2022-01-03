@@ -23,9 +23,9 @@ class Item
         float $price,
         int $quantity,
         int $discount,
-        string $deliveryType,
-        string $categoryId,
-        string $sellerId,
+        ?string $deliveryType,
+        ?string $categoryId,
+        ?string $sellerId,
         ?float $taxRate,
         ?float $taxValue
     ) {

@@ -19,7 +19,7 @@ class Card
         string $csc,
         string $expirationMonth,
         string $expirationYear,
-        string $document
+        ?string $document
     ) {
         $this->holder = $holder;
         $this->number = $number;
