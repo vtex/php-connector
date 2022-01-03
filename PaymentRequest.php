@@ -107,4 +107,9 @@ class PaymentRequest
         $this->callbackUrl = $callbackUrl;
         $this->returnUrl = $returnUrl;
     }
+
+    public function paymentId(): string
+    {
+        return $this->paymentId;
+    }
 }

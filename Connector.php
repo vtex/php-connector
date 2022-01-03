@@ -315,30 +315,30 @@ class Connector
                 (float) $requestBody['value'],
                 $requestBody['currency'],
                 $requestBody['installments'],
-                (float) $requestBody['installmentsInterestRate'],
-                (float) $requestBody['installmentsValue'],
+                isset($requestBody['installmentsInterestRate']) ? (float) $requestBody['installmentsInterestRate'] : null,
+                isset($requestBody['installmentsValue']) ? (float) $requestBody['installmentsValue'] : null,
                 $requestBody['deviceFingerprint'],
                 $requestBody['ipAddress'],
                 $card,
-                (float) $requestBody['shippingValue'],
-                (float) $requestBody['taxValue'],
+                isset($requestBody['shippingValue']) ? (float) $requestBody['shippingValue'] : null,
+                isset($requestBody['taxValue']) ? (float) $requestBody['taxValue'] : null,
                 $buyer,
                 $shippingAddress,
                 $billingAddress,
                 $items,
                 $recipients,
-                $requestBody['merchantSettings'],
-                $requestBody['url'],
-                $requestBody['inboundRequestUrl'],
-                $requestBody['secureProxyUrl'],
-                $requestBody['sandboxMode'],
-                (float) $requestBody['totalCartValue'],
+                $requestBody['merchantSettings'] ?? null,
+                $requestBody['url'] ?? null,
+                $requestBody['inboundRequestUrl'] ?? null,
+                $requestBody['secureProxyUrl'] ?? null,
+                $requestBody['sandboxMode'] ?? false,
+                isset($requestBody['totalCartValue']) ? (float) $requestBody['totalCartValue'] : null,
                 $requestBody['callbackUrl'],
                 $requestBody['returnUrl']
             );
 
         } catch (\Throwable $th) {
-            throw new Exception('Invalid Request Body', 400);
+            throw $th;
         }
         // formats request according to provider definition
         //$requestAsArray = $request->toArray();
@@ -348,6 +348,21 @@ class Connector
         $providerResponseArray = $this->providerAPI->createPayment($requestAsArray);
 
         // returns response formatted according to PPP definitions
+        return [
+            "paymentId" => $request->paymentId(),
+            "status" => "approved",
+            "authorizationId" => $providerResponseArray[""],
+            "tid" => $providerResponseArray["tid"],
+            "nsu" => $providerResponseArray["nsu"],
+            "acquirer" => $providerResponseArray["acquirer"],
+            "code" => $providerResponseArray["code"],
+            "message" => $providerResponseArray["message"],
+            "delayToAutoSettle" => $providerResponseArray["delayToAutoSettle"],
+            "delayToAutoSettleAfterAntifraud" => $providerResponseArray["delayToAutoSettleAfterAntifraud"],
+            "delayToCancel" => $providerResponseArray["delayToCancel"],
+            "maxValue" => $providerResponseArray["maxValue"],
+        ];
+
         return json_encode($providerResponseArray);
     }
 }
