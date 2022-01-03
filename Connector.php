@@ -351,7 +351,7 @@ class Connector
         return json_encode([
             "paymentId" => $request->paymentId(),
             "status" => "approved",
-            "authorizationId" => $providerResponseArray[""],
+            "authorizationId" => "09DC5E8F03",
             "tid" => $providerResponseArray["tid"],
             "nsu" => $providerResponseArray["nsu"],
             "acquirer" => $providerResponseArray["acquirer"],
