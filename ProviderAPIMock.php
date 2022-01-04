@@ -45,6 +45,7 @@ class ProviderAPIMock implements ProviderAPIInterface
 
     private static $creditCardPaymentProcessing = [
         "status" => "undefined",
+        "tid" => "TID-7B58BE1A08",
     ];
 
     /**
