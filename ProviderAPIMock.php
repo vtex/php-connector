@@ -44,11 +44,7 @@ class ProviderAPIMock implements ProviderAPIInterface
         "nsu" => null,
         "acquirer" => null,
         "code" => "200",
-        "message" => "Credit card payment denied",
-        "delayToAutoSettle" => 21600,
-        "delayToAutoSettleAfterAntifraud" => 1800,
-        "delayToCancel" => 21600,
-        "maxValue" => 1000,
+        "message" => "Credit card payment denied"
     ];
 
     /**
