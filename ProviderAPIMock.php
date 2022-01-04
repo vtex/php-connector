@@ -39,9 +39,7 @@ class ProviderAPIMock implements ProviderAPIInterface
         "status" => "denied",
         "authorizationId" => null,
         "tid" => "TID-7B58BE1A08",
-        "nsu" => null,
-        "acquirer" => null,
-        "code" => "200",
+        "code" => "403",
         "message" => "Credit card payment denied"
     ];
 
