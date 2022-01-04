@@ -345,12 +345,12 @@ class Connector
         $requestAsArray = [];
 
         // call provider to process the request
-        $providerResponseArray = $this->providerAPI->createPayment($requestAsArray);
+        $providerResponseArray = $this->providerAPI->createPayment($request);
 
         // returns response formatted according to PPP definitions
         return json_encode([
             "paymentId" => $request->paymentId(),
-            "status" => "approved",
+            "status" => $providerResponseArray["status"],
             "authorizationId" => $providerResponseArray["authorizationId"],
             "tid" => $providerResponseArray["tid"],
             "nsu" => $providerResponseArray["nsu"],
