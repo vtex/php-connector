@@ -22,7 +22,6 @@ class ProviderAPIMock implements ProviderAPIInterface
     ];
 
     private static $creditCardPaymentApprovedResponse = [
-        "paymentId" => "01693EB95BE443AC85874E395CD91565",
         "status" => "approved",
         "authorizationId" => "AUT-09DC5E8F03",
         "tid" => "TID-7B58BE1A08",
@@ -37,7 +36,6 @@ class ProviderAPIMock implements ProviderAPIInterface
     ];
 
     private static $creditCardPaymentDeniedResponse = [
-        "paymentId" => "01693EB95BE443AC85874E395CD91565",
         "status" => "denied",
         "authorizationId" => null,
         "tid" => "TID-7B58BE1A08",

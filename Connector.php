@@ -348,19 +348,7 @@ class Connector
         $providerResponseArray = $this->providerAPI->createPayment($request);
 
         // returns response formatted according to PPP definitions
-        return json_encode([
-            "paymentId" => $request->paymentId(),
-            "status" => $providerResponseArray["status"],
-            "authorizationId" => $providerResponseArray["authorizationId"],
-            "tid" => $providerResponseArray["tid"],
-            "nsu" => $providerResponseArray["nsu"],
-            "acquirer" => $providerResponseArray["acquirer"],
-            "code" => $providerResponseArray["code"],
-            "message" => $providerResponseArray["message"],
-            "delayToAutoSettle" => $providerResponseArray["delayToAutoSettle"],
-            "delayToAutoSettleAfterAntifraud" => $providerResponseArray["delayToAutoSettleAfterAntifraud"],
-            "delayToCancel" => $providerResponseArray["delayToCancel"],
-            "maxValue" => $providerResponseArray["maxValue"],
-        ]);
+        $responseArray = array_merge(["paymentId" => $request->paymentId()], $providerResponseArray);
+        return json_encode($responseArray);
     }
 }
