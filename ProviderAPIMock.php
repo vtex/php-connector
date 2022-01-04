@@ -40,7 +40,7 @@ class ProviderAPIMock implements ProviderAPIInterface
         "paymentId" => "01693EB95BE443AC85874E395CD91565",
         "status" => "denied",
         "authorizationId" => null,
-        "tid" => null,
+        "tid" => "TID-7B58BE1A08",
         "nsu" => null,
         "acquirer" => null,
         "code" => "200",
