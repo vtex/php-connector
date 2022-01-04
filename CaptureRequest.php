@@ -20,7 +20,7 @@ class CaptureRequest
         string $requestId,
         string $paymentId,
         float $value,
-        string $authorizationId,
+        ?string $authorizationId, // docs says mandatory, but test doesn't send it
         ?string $tid,
         ?array $recipients,
         ?bool $sandboxMode

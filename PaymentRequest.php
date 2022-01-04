@@ -112,4 +112,9 @@ class PaymentRequest
     {
         return $this->paymentId;
     }
+
+    public function card(): Card
+    {
+        return $this->card;
+    }
 }

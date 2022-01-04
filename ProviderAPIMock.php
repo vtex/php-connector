@@ -21,6 +21,36 @@ class ProviderAPIMock implements ProviderAPIInterface
         "responseCode" => 501
     ];
 
+    private static $creditCardPaymentApprovedResponse = [
+        "paymentId" => "01693EB95BE443AC85874E395CD91565",
+        "status" => "approved",
+        "authorizationId" => "AUT-09DC5E8F03",
+        "tid" => "TID-7B58BE1A08",
+        "nsu" => "NSU-107521E866",
+        "acquirer" => "TestPay",
+        "code" => "200",
+        "message" => null,
+        "delayToAutoSettle" => 21600,
+        "delayToAutoSettleAfterAntifraud" => 1800,
+        "delayToCancel" => 21600,
+        "maxValue" => 1000,
+    ];
+
+    private static $creditCardPaymentDeniedResponse = [
+        "paymentId" => "01693EB95BE443AC85874E395CD91565",
+        "status" => "denied",
+        "authorizationId" => null,
+        "tid" => null,
+        "nsu" => null,
+        "acquirer" => null,
+        "code" => "200",
+        "message" => "Credit card payment denied",
+        "delayToAutoSettle" => 21600,
+        "delayToAutoSettleAfterAntifraud" => 1800,
+        "delayToCancel" => 21600,
+        "maxValue" => 1000,
+    ];
+
     /**
      * This functions should do some checks on the request e.g.:
      * check if the request is valid, confirm that is settled,
@@ -121,19 +151,31 @@ class ProviderAPIMock implements ProviderAPIInterface
 
     public function createPayment($request): array
     {
-        return [
-            "paymentId" => "01693EB95BE443AC85874E395CD91565",
-            "status" => "approved",
-            "authorizationId" => "AUT-09DC5E8F03",
-            "tid" => "TID-7B58BE1A08",
-            "nsu" => "NSU-107521E866",
-            "acquirer" => "TestPay",
-            "code" => "200",
-            "message" => null,
-            "delayToAutoSettle" => 21600,
-            "delayToAutoSettleAfterAntifraud" => 1800,
-            "delayToCancel" => 21600,
-            "maxValue" => 1000,
-        ];
+        $creditCardIsValid = $this->validateCreditCard($request->card()->cardNumber());
+
+        if ($creditCardIsValid) {
+            return self::$creditCardPaymentApprovedResponse;
+        } else {
+            return self::$creditCardPaymentDeniedResponse;
+        }
+    }
+
+    private function validateCreditCard($creditCardNumber): bool
+    {
+        $cards = array(
+            "visa" => "(4\d{12}(?:\d{3})?)",
+            "amex" => "(3[47]\d{13})",
+            "jcb" => "(35[2-8][89]\d\d\d{10})",
+            "maestro" => "((?:5020|5038|6304|6579|6761)\d{12}(?:\d\d)?)",
+            "solo" => "((?:6334|6767)\d{12}(?:\d\d)?\d?)",
+            "mastercard" => "(5[1-5]\d{14})",
+            "switch" => "(?:(?:(?:4903|4905|4911|4936|6333|6759)\d{12})|(?:(?:564182|633110)\d{10})(\d\d)?\d?)",
+        );
+        $names = array("Visa", "American Express", "JCB", "Maestro", "Solo", "Mastercard", "Switch");
+        $matches = array();
+        $pattern = "#^(?:" . implode("|", $cards) . ")$#";
+        $result = preg_match($pattern, str_replace(" ", "", $creditCardNumber), $matches);
+
+        return ($result > 0) ? $names[sizeof($matches) - 2] : false;
     }
 }

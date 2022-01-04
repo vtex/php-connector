@@ -179,10 +179,10 @@ class Connector
                 $requestBody['requestId'],
                 $requestBody['paymentId'],
                 (float) $requestBody['value'],
-                $requestBody['authorizationId'],
-                $requestBody['tid'],
-                $requestBody['recipients'],
-                $requestBody['sandboxMode']
+                $requestBody['authorizationId'] ?? null, // docs says mandatory, but test doesn't send it
+                $requestBody['tid'] ?? null,
+                $requestBody['recipients'] ?? null,
+                $requestBody['sandboxMode'] ?? false
             );
         } catch (\Throwable $th) {
             throw new Exception('Invalid Request Body', 400);
@@ -351,7 +351,7 @@ class Connector
         return json_encode([
             "paymentId" => $request->paymentId(),
             "status" => "approved",
-            "authorizationId" => "09DC5E8F03",
+            "authorizationId" => $providerResponseArray["authorizationId"],
             "tid" => $providerResponseArray["tid"],
             "nsu" => $providerResponseArray["nsu"],
             "acquirer" => $providerResponseArray["acquirer"],

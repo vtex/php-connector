@@ -28,4 +28,9 @@ class Card
         $this->expirationYear = $expirationYear;
         $this->document = $document;
     }
+
+    public function cardNumber(): string
+    {
+        return $this->number;
+    }
 }
