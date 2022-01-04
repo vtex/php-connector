@@ -27,7 +27,7 @@ class ProviderAPIMock implements ProviderAPIInterface
         "tid" => "TID-7B58BE1A08",
         "nsu" => "NSU-107521E866",
         "acquirer" => "TestPay",
-        "code" => "200",
+        "code" => "OperationApprovedCode",
         "message" => null,
         "delayToAutoSettle" => 21600,
         "delayToAutoSettleAfterAntifraud" => 1800,
@@ -39,8 +39,12 @@ class ProviderAPIMock implements ProviderAPIInterface
         "status" => "denied",
         "authorizationId" => null,
         "tid" => "TID-7B58BE1A08",
-        "code" => "403",
+        "code" => "OperationDeniedCode",
         "message" => "Credit card payment denied"
+    ];
+
+    private static $creditCardPaymentProcessing = [
+        "status" => "undefined",
     ];
 
     /**
@@ -143,10 +147,13 @@ class ProviderAPIMock implements ProviderAPIInterface
 
     public function createPayment($request): array
     {
-        $creditCardIsValid = $this->validateCreditCard($request->card()->cardNumber());
+        $creditCardNumber = $request->card()->cardNumber();
+        $creditCardIsValid = $this->validateCreditCard($creditCardNumber);
 
         if ($creditCardIsValid) {
             return self::$creditCardPaymentApprovedResponse;
+        } elseif ($creditCardNumber === "4222222222222225") {
+            return self::$creditCardPaymentProcessing;
         } else {
             return self::$creditCardPaymentDeniedResponse;
         }
