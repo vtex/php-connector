@@ -18,21 +18,21 @@ class Connector
         $this->providerAPI = $providerAPI;
     }
 
-    function listPaymentMethods(): string
+    function listPaymentMethods(): array
     {
-        return json_encode([
+        return [
             "paymentMethods" => [
                 "Visa",
                 "Mastercard",
                 "American Express",
             ]
-        ]);
+        ];
     }
 
     // to test: are customFields and autoSettleDelay mandatory?
-    function listPaymentProviderManifest(): string
+    function listPaymentProviderManifest(): array
     {
-        return json_encode([
+        return [
             "paymentMethods" => [
                 [
                     "name" => "Visa",
@@ -75,7 +75,7 @@ class Connector
                 "minimum" => "0",
                 "maximum" => "720"
             ]
-        ]);
+        ];
     }
 
     /**
@@ -116,17 +116,17 @@ class Connector
             "value" => $providerResponseArray["value"],
         ];
 
-        if (!is_null($providerResponseArray["code"])) {
+        if (isset($providerResponseArray["code"])) {
             $formattedResponse["code"] = $providerResponseArray["code"];
         }
 
-        if (!is_null($providerResponseArray["message"])) {
+        if (isset($providerResponseArray["message"])) {
             $formattedResponse["message"] = $providerResponseArray["message"];
         }
 
         return [
             "responseCode" => $providerResponseArray["responseCode"],
-            "responseData" => json_encode($formattedResponse)
+            "responseData" => $formattedResponse
         ];
 
     }
@@ -157,17 +157,17 @@ class Connector
             "cancellationId" => $providerResponseArray["cancellationId"],
         ];
 
-        if (!is_null($providerResponseArray["code"])) {
+        if (isset($providerResponseArray["code"])) {
             $formattedResponse["code"] = $providerResponseArray["code"];
         }
 
-        if (!is_null($providerResponseArray["message"])) {
+        if (isset($providerResponseArray["message"])) {
             $formattedResponse["message"] = $providerResponseArray["message"];
         }
 
         return [
             "responseCode" => $providerResponseArray["responseCode"],
-            "responseData" => json_encode($formattedResponse)
+            "responseData" => $formattedResponse
         ];
     }
 
@@ -176,7 +176,7 @@ class Connector
         try {
             $request = new CaptureRequest(
                 $requestBody['transactionId'],
-                $requestBody['requestId'],
+                $requestBody['requestId'] ?? null,
                 $requestBody['paymentId'],
                 (float) $requestBody['value'],
                 $requestBody['authorizationId'] ?? null, // docs says mandatory, but test doesn't send it
@@ -202,21 +202,21 @@ class Connector
             "value" => $providerResponseArray["value"],
         ];
 
-        if (!is_null($providerResponseArray["code"])) {
+        if (isset($providerResponseArray["code"])) {
             $formattedResponse["code"] = $providerResponseArray["code"];
         }
 
-        if (!is_null($providerResponseArray["message"])) {
+        if (isset($providerResponseArray["message"])) {
             $formattedResponse["message"] = $providerResponseArray["message"];
         }
 
         return [
             "responseCode" => $providerResponseArray["responseCode"],
-            "responseData" => json_encode($formattedResponse)
+            "responseData" => $formattedResponse
         ];
     }
 
-    public function createPayment(array $requestBody): string
+    public function createPayment(array $requestBody): array
     {
         try {
             $card = new Card(
@@ -349,6 +349,11 @@ class Connector
 
         // returns response formatted according to PPP definitions
         $responseArray = array_merge(["paymentId" => $request->paymentId()], $providerResponseArray);
-        return json_encode($responseArray);
+        return $responseArray;
+    }
+
+    public function retryAndPostStatus(array $requestBody)
+    {
+
     }
 }

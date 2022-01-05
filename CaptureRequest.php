@@ -17,7 +17,7 @@ class CaptureRequest
 
     public function __construct(
         string $transactionId,
-        string $requestId,
+        ?string $requestId,
         string $paymentId,
         float $value,
         ?string $authorizationId, // docs says mandatory, but test doesn't send it
@@ -35,7 +35,7 @@ class CaptureRequest
         $this->sandboxMode = $sandboxMode ?? false;
     }
 
-    public function requestId(): string
+    public function requestId(): ?string
     {
         return $this->requestId;
     }

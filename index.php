@@ -79,4 +79,8 @@ if ($verb === 'GET') {
 
 header("Content-Type: application/json");
 header("Accept: application/json");
-echo $response;
+echo json_encode($response);
+
+if (isset($response["status"]) && $response["status"] === "undefined") {
+    $connector->retryAndPostStatus($requestBody);
+}
