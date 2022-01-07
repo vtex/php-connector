@@ -2,8 +2,6 @@
 
 namespace PhpConnector;
 
-use GuzzleHttp\Promise\Promise;
-
 class Connector
 {
     private $providerService = null;
@@ -340,17 +338,6 @@ class Connector
 
         // call provider to process the request
         $providerResponseArray = $this->providerService->createPayment($request);
-
-        // if ($providerResponseArray["status"] === 'undefined') {
-        //     //error_log("passei aqui");
-        //     $promise = new Promise(
-        //         function () use ($request, &$promise) {
-        //             sleep(3);
-        //             $promise->resolve($this->retry($request));
-        //         }
-        //     );
-        //     $promise->wait();
-        // }
 
         // returns response formatted according to PPP definitions
         $responseArray = array_merge(["paymentId" => $request->paymentId()], $providerResponseArray);
