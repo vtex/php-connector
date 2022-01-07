@@ -1,7 +1,8 @@
 <?php
 
+namespace PhpConnector;
 
-interface ProviderAPIInterface
+interface ProviderServiceInterface
 {
     public function processRefund(array $requestData): array;
 
@@ -10,5 +11,4 @@ interface ProviderAPIInterface
     public function processCapture(array $requestData): array;
 
     public function createPayment($request): array;
-
 }

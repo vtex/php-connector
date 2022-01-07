@@ -1,8 +1,8 @@
 <?php
 
-require("ProviderAPIInterface.php");
+namespace PhpConnector;
 
-class ProviderAPIMock implements ProviderAPIInterface
+class ProviderMockService implements ProviderServiceInterface
 {
 
     private static $refundNotSupportedResponse = [
@@ -96,7 +96,7 @@ class ProviderAPIMock implements ProviderAPIInterface
 
         // Do some transactions to execute the refund
         if ($requestArray["value"] > 1000) {
-            throw new Exception('Cannot refund', 500);
+            throw new \Exception('Cannot refund', 500);
         }
 
         return [

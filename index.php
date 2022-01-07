@@ -1,10 +1,12 @@
 <?php
 
-require("Connector.php");
-require("ProviderAPIMock.php");
+require 'vendor/autoload.php';
 
-$providerAPI = new ProviderAPIMock;
-$connector = new Connector($providerAPI);
+use PhpConnector\Connector;
+use PhpConnector\ProviderMockService;
+
+$providerService = new ProviderMockService;
+$connector = new Connector($providerService);
 
 // handle requests by verb and path
 $verb = $_SERVER['REQUEST_METHOD'];
@@ -81,6 +83,6 @@ header("Content-Type: application/json");
 header("Accept: application/json");
 echo json_encode($response);
 
-if (isset($response["status"]) && $response["status"] === "undefined") {
-    $connector->retryAndPostStatus($requestBody);
+if (isset($response["status"]) && $response["status"] === 'undefined') {
+    $connector->retry($requestBody);
 }

@@ -1,21 +1,17 @@
 <?php
 
-require("CaptureRequest.php");
-require("CancellationRequest.php");
-require("RefundRequest.php");
-require("Card.php");
-require("Address.php");
-require("Buyer.php");
-require("Recipient.php");
-require("Item.php");
-require("PaymentRequest.php");
+namespace PhpConnector;
+
+use GuzzleHttp\Promise\Promise;
+
 class Connector
 {
-    private $providerAPI = null;
+    private $providerService = null;
 
-    public function __construct(ProviderAPIInterface $providerAPI)
+    public function __construct(ProviderServiceInterface $providerService)
     {
-        $this->providerAPI = $providerAPI;
+
+        $this->providerService = $providerService;
     }
 
     function listPaymentMethods(): array
@@ -106,7 +102,7 @@ class Connector
         $requestAsArray = $request->toArray();
 
         // call provider to process the request
-        $providerResponseArray = $this->providerAPI->processRefund($requestAsArray);
+        $providerResponseArray = $this->providerService->processRefund($requestAsArray);
 
         // format response according to PPP definitions
         $formattedResponse = [
@@ -128,7 +124,6 @@ class Connector
             "responseCode" => $providerResponseArray["responseCode"],
             "responseData" => $formattedResponse
         ];
-
     }
 
     public function cancelPayment(array $requestBody): array
@@ -148,7 +143,7 @@ class Connector
         $requestAsArray = $request->toArray();
 
         // call provider to process the request
-        $providerResponseArray = $this->providerAPI->processCancellation($requestAsArray);
+        $providerResponseArray = $this->providerService->processCancellation($requestAsArray);
 
         // format response according to PPP definitions
         $formattedResponse = [
@@ -185,14 +180,14 @@ class Connector
                 $requestBody['sandboxMode'] ?? false
             );
         } catch (\Throwable $th) {
-            throw new Exception('Invalid Request Body', 400);
+            throw $th;
         }
 
         // assuming that provider expects an array as input
         $requestAsArray = $request->toArray();
 
         // call provider to process the request
-        $providerResponseArray = $this->providerAPI->processCapture($requestAsArray);
+        $providerResponseArray = $this->providerService->processCapture($requestAsArray);
 
         // format response according to PPP definitions
         $formattedResponse = [
@@ -336,7 +331,6 @@ class Connector
                 $requestBody['callbackUrl'],
                 $requestBody['returnUrl']
             );
-
         } catch (\Throwable $th) {
             throw $th;
         }
@@ -345,15 +339,78 @@ class Connector
         $requestAsArray = [];
 
         // call provider to process the request
-        $providerResponseArray = $this->providerAPI->createPayment($request);
+        $providerResponseArray = $this->providerService->createPayment($request);
+
+        // if ($providerResponseArray["status"] === 'undefined') {
+        //     //error_log("passei aqui");
+        //     $promise = new Promise(
+        //         function () use ($request, &$promise) {
+        //             sleep(3);
+        //             $promise->resolve($this->retry($request));
+        //         }
+        //     );
+        //     $promise->wait();
+        // }
 
         // returns response formatted according to PPP definitions
         $responseArray = array_merge(["paymentId" => $request->paymentId()], $providerResponseArray);
         return $responseArray;
     }
 
-    public function retryAndPostStatus(array $requestBody)
+    /* private function executeAuthorization($request)
     {
+        $promise = new Promise(
+            function () use (&$promise) {
+                //Make a request to an http server
+                $httpResponse = 200;
+                sleep(5);
+                $promise->resolve($httpResponse);
+            }
+        );
 
+        return;
+    } */
+
+    public function retry($requestBody)
+    {
+        error_log("passei aqui"); //
+        $response = [
+            "status" => "denied",
+            "authorizationId" => null,
+            "tid" => "TID-7B58BE1A08",
+            "code" => "OperationDeniedCode",
+            "message" => "Credit card payment denied"
+        ];
+
+        $curl = curl_init();
+
+        $payload = json_encode($response);
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $requestBody['callbackUrl'],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_HTTPHEADER => [
+                "Accept: application/json",
+                "Content-Type: application/json"
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $error = curl_error($curl);
+
+        curl_close($curl);
+
+        // if ($error) {
+        //     echo "cURL Error #:" . $error;
+        // } else {
+        //     echo $response;
+        // }
+        error_log($httpcode);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+namespace PhpConnector;
+
 /**
  * Item Class validates that the request body contains all the necessary parameters
  * with the expected type.

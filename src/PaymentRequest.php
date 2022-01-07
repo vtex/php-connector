@@ -1,5 +1,7 @@
 <?php
 
+namespace PhpConnector;
+
 /**
  * Payment Request Class validates that the request body contains all the necessary
  * parameters with the expected type.
@@ -116,5 +118,10 @@ class PaymentRequest
     public function card(): Card
     {
         return $this->card;
+    }
+
+    public function callbackUrl(): string
+    {
+        return $this->callbackUrl;
     }
 }

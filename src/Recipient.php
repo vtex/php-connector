@@ -1,5 +1,7 @@
 <?php
 
+namespace PhpConnector;
+
 /**
  * Recipient Class validates that the request body contains all the necessary parameters
  * with the expected type.
