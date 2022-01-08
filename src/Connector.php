@@ -4,11 +4,12 @@ namespace PhpConnector;
 
 class Connector
 {
+    private $isTestRequest;
     private $providerService = null;
 
-    public function __construct(ProviderServiceInterface $providerService)
+    public function __construct(bool $isTestRequest, ProviderServiceInterface $providerService)
     {
-
+        $this->isTestRequest = $isTestRequest;
         $this->providerService = $providerService;
     }
 

@@ -5,9 +5,6 @@ require 'vendor/autoload.php';
 use PhpConnector\Connector;
 use PhpConnector\ProviderMockService;
 
-$providerService = new ProviderMockService;
-$connector = new Connector($providerService);
-
 // handle requests by verb and path
 $verb = $_SERVER['REQUEST_METHOD'];
 $urlPieces = explode('/', $_SERVER['REQUEST_URI']);
@@ -21,12 +18,20 @@ $path = end($urlPieces);
  */
 $headers = getallheaders();
 
+error_log(json_encode($headers));
+
+// test suite is sending headers different from expected, should be X-VTEX-API-AppKey &
+// X-VTEX-API-AppToken
 $credentials = [
     "key" => $headers["X-Vtex-Api-Appkey"] ?? null,
     "token" => $headers["X-Vtex-Api-Apptoken"] ?? null
 ];
 
-error_log(json_encode($headers));
+$isTestRequest = false;
+
+if (isset($headers["X-Vtex-Api-Is-Testsuite"]) && $headers["X-Vtex-Api-Is-Testsuite"] === 'true') {
+    $isTestRequest = true;
+}
 
 set_exception_handler(function ($e) {
 	$code = $e->getCode() ?: 400;
@@ -34,6 +39,9 @@ set_exception_handler(function ($e) {
 	echo json_encode(["error" => $e->getMessage()]);
 	exit;
 });
+
+$providerService = new ProviderMockService;
+$connector = new Connector($callerIsTestSuite, $providerService);
 
 if ($verb === 'GET') {
     switch ($path) {
@@ -90,6 +98,8 @@ header("Content-Type: application/json");
 header("Accept: application/json");
 echo json_encode($response);
 
+
+// this could be better, but it's very hard to set async with php
 if (isset($response["status"]) && $response["status"] === 'undefined') {
     $connector->retry($requestBody, $credentials);
 }
