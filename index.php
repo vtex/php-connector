@@ -22,8 +22,8 @@ $path = end($urlPieces);
 $headers = getallheaders();
 
 $credentials = [
-    "X-VTEX-API-AppKey" => $headers["X-VTEX-API-AppKey"] ?? null,
-    "X-VTEX-API-AppToken" => $headers["X-VTEX-API-AppToken"] ?? null
+    "key" => $headers["X-Vtex-Api-Appkey"] ?? null,
+    "token" => $headers["X-Vtex-Api-Apptoken"] ?? null
 ];
 
 error_log(json_encode($headers));

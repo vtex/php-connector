@@ -386,8 +386,8 @@ class Connector
             CURLOPT_HTTPHEADER => [
                 "Accept: application/json",
                 "Content-Type: application/json",
-                "X-VTEX-API-AppKey: {$credentials["X-VTEX-API-AppKey"]}",
-                "X-VTEX-API-AppToken: {$credentials["X-VTEX-API-AppToken"]}"
+                "X-VTEX-API-AppKey: {$credentials["key"]}",
+                "X-VTEX-API-AppToken: {$credentials["token"]}"
             ],
         ]);
 
