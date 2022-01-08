@@ -362,6 +362,7 @@ class Connector
     {
         error_log("passei aqui"); //
         $response = [
+            "paymentId" =>  $requestBody['paymentId'],
             "status" => "denied",
             "authorizationId" => null,
             "tid" => "TID-7B58BE1A08",
