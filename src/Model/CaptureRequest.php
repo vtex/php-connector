@@ -37,6 +37,20 @@ class CaptureRequest
         $this->sandboxMode = $sandboxMode ?? false;
     }
 
+    public static function fromArray(array $array): self
+    {
+        return new self(
+            $array['transactionId'],
+            $array['requestId'] ?? null,
+            $array['paymentId'],
+            (float) $array['value'],
+            $array['authorizationId'] ?? null, // docs says mandatory, but test doesn't send it
+            $array['tid'] ?? null,
+            $array['recipients'] ?? null,
+            $array['sandboxMode'] ?? false
+        );
+    }
+
     public function requestId(): ?string
     {
         return $this->requestId;

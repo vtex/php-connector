@@ -2,10 +2,12 @@
 
 namespace PhpConnector\Service;
 
-use PhpConnector\Model\RefundRequest;
-use PhpConnector\Model\RefundResponse;
 use PhpConnector\Model\CancellationRequest;
 use PhpConnector\Model\CancellationResponse;
+use PhpConnector\Model\CaptureRequest;
+use PhpConnector\Model\CaptureResponse;
+use PhpConnector\Model\RefundRequest;
+use PhpConnector\Model\RefundResponse;
 
 class ProviderMockService implements ProviderServiceInterface
 {
@@ -53,6 +55,18 @@ class ProviderMockService implements ProviderServiceInterface
         return bin2hex(random_bytes(10));
     }
 
+    public function processCapture(CaptureRequest $request): CaptureResponse
+    {
+        $captureId = $this->nextCaptureId();
+
+        return CaptureResponse::approved($request, $captureId);
+    }
+
+    private function nextCaptureId(): string
+    {
+        return bin2hex(random_bytes(10));
+    }
+
     /**
      * This functions should do some checks on the request e.g.:
      * check if the request is valid, confirm that is settled,
@@ -71,23 +85,6 @@ class ProviderMockService implements ProviderServiceInterface
     }
 
     private function nextRefundId(): string
-    {
-        return bin2hex(random_bytes(10));
-    }
-
-    public function processCapture(array $requestArray): array
-    {
-        $captureId = $this->nextCaptureId();
-
-        return [
-            "settleId" => $captureId,
-            "value" => $requestArray["value"],
-            "message" => "Successfully settled",
-            "responseCode" => 200
-        ];
-    }
-
-    private function nextCaptureId(): string
     {
         return bin2hex(random_bytes(10));
     }

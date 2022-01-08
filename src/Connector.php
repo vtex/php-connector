@@ -3,8 +3,15 @@
 namespace PhpConnector;
 
 use PhpConnector\Service\ProviderServiceInterface;
-use PhpConnector\Model\RefundRequest;
 use PhpConnector\Model\CancellationRequest;
+use PhpConnector\Model\CaptureRequest;
+use PhpConnector\Model\RefundRequest;
+use PhpConnector\Model\Card;
+use PhpConnector\Model\Address;
+use PhpConnector\Model\Buyer;
+use PhpConnector\Model\Item;
+use PhpConnector\Model\Recipient;
+use PhpConnector\Model\PaymentRequest;
 
 class Connector
 {
@@ -48,51 +55,6 @@ class Connector
                     "allowsSplit" => "disabled"
                 ],
             ]
-        ];
-    }
-
-    public function capturePayment(array $requestBody): array
-    {
-        try {
-            $request = new CaptureRequest(
-                $requestBody['transactionId'],
-                $requestBody['requestId'] ?? null,
-                $requestBody['paymentId'],
-                (float) $requestBody['value'],
-                $requestBody['authorizationId'] ?? null, // docs says mandatory, but test doesn't send it
-                $requestBody['tid'] ?? null,
-                $requestBody['recipients'] ?? null,
-                $requestBody['sandboxMode'] ?? false
-            );
-        } catch (\Throwable $th) {
-            throw $th;
-        }
-
-        // assuming that provider expects an array as input
-        $requestAsArray = $request->toArray();
-
-        // call provider to process the request
-        $providerResponseArray = $this->providerService->processCapture($requestAsArray);
-
-        // format response according to PPP definitions
-        $formattedResponse = [
-            "paymentId" => $request->paymentId(),
-            "requestId" => $request->requestId(),
-            "settleId" => $providerResponseArray["settleId"],
-            "value" => $providerResponseArray["value"],
-        ];
-
-        if (isset($providerResponseArray["code"])) {
-            $formattedResponse["code"] = $providerResponseArray["code"];
-        }
-
-        if (isset($providerResponseArray["message"])) {
-            $formattedResponse["message"] = $providerResponseArray["message"];
-        }
-
-        return [
-            "responseCode" => $providerResponseArray["responseCode"],
-            "responseData" => $formattedResponse
         ];
     }
 
@@ -303,10 +265,27 @@ class Connector
         ];
     }
 
+
+    public function capturePayment(array $requestBody): array
+    {
+        try {
+            $request = CaptureRequest::fromArray($requestBody);
+        } catch (\Throwable $th) {
+            throw new \Exception('Invalid Request Body', 400);
+        }
+
+        $settlementResponse = $this->providerService->processCapture($request);
+
+        return [
+            "responseCode" => $settlementResponse->responseCode(),
+            "responseData" => $settlementResponse->asArray()
+        ];
+    }
+
     function refundPayment(array $requestBody): array
     {
         try {
-            $request =  RefundRequest::fromArray($requestBody);
+            $request = RefundRequest::fromArray($requestBody);
         } catch (\Throwable $th) {
             throw new \Exception('Invalid Request Body', 400);
         }
