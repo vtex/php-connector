@@ -360,6 +360,8 @@ class Connector
 
     public function retry($requestBody, $credentials)
     {
+        error_log($credentials["X-VTEX-API-AppKey"]);
+        error_log($credentials["X-VTEX-API-AppToken"]);
         $response = [
             "paymentId" =>  $requestBody['paymentId'],
             "status" => "denied",

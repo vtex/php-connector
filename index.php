@@ -26,6 +26,8 @@ $credentials = [
     "X-VTEX-API-AppToken" => $headers["X-VTEX-API-AppToken"] ?? null
 ];
 
+error_log(json_encode($headers));
+
 set_exception_handler(function ($e) {
 	$code = $e->getCode() ?: 400;
 	header("Content-Type: application/json", false, $code);
