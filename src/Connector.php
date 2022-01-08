@@ -3,6 +3,8 @@
 namespace PhpConnector;
 
 use PhpConnector\Service\ProviderServiceInterface;
+use PhpConnector\Model\RefundRequest;
+use PhpConnector\Model\CancellationRequest;
 
 class Connector
 {
@@ -26,8 +28,10 @@ class Connector
         ];
     }
 
-    // to test: are customFields and autoSettleDelay mandatory?
-    function listPaymentProviderManifest(): array
+    /**
+     * To-improve: TestSuit could test this endpoint.
+     */
+    function listPaymentProviderManifestAction(): array
     {
         return [
             "paymentMethods" => [
@@ -43,127 +47,7 @@ class Connector
                     "name" => "American Express",
                     "allowsSplit" => "disabled"
                 ],
-            ],
-            /* "customFields" => [
-                [
-                    "name" => "Merchant's custom field",
-                    "type" => "text"
-                ],
-                [
-                    "name" => "Merchant's custom select field",
-                    "type" => "select",
-                    "options" => [
-                        [
-                            "text" => "Field option 1",
-                            "value" => "1"
-                        ],
-                        [
-                            "text" => "Field option 2",
-                            "value" => "2"
-                        ],
-                        [
-                            "text" => "Field option 3",
-                            "value" => "3"
-                        ]
-                    ]
-                ]
-            ],
-            "autoSettleDelay" => [
-                "minimum" => "0",
-                "maximum" => "720"
-            ] */
-        ];
-    }
-
-    /**
-     * This function validates the request body and reaches out to the provider to process
-     * the refund request and return the formatted response body.
-     *
-     * @param array $requestBody
-     * @return string
-     */
-    function refundPayment(array $requestBody): array
-    {
-        try {
-            $request = new RefundRequest(
-                $requestBody['requestId'],
-                $requestBody['settleId'],
-                $requestBody['paymentId'],
-                $requestBody['tid'],
-                (float) $requestBody['value'],
-                $requestBody['transactionId'],
-                $requestBody['recipients'],
-                $requestBody['sandboxMode']
-            );
-        } catch (\Throwable $th) {
-            throw new \Exception('Invalid Request Body', 400);
-        }
-
-        // assuming that provider expects an array as input
-        $requestAsArray = $request->toArray();
-
-        // call provider to process the request
-        $providerResponseArray = $this->providerService->processRefund($requestAsArray);
-
-        // format response according to PPP definitions
-        $formattedResponse = [
-            "paymentId" => $request->paymentId(),
-            "requestId" => $request->requestId(),
-            "refundId" => $providerResponseArray["refundId"],
-            "value" => $providerResponseArray["value"],
-        ];
-
-        if (isset($providerResponseArray["code"])) {
-            $formattedResponse["code"] = $providerResponseArray["code"];
-        }
-
-        if (isset($providerResponseArray["message"])) {
-            $formattedResponse["message"] = $providerResponseArray["message"];
-        }
-
-        return [
-            "responseCode" => $providerResponseArray["responseCode"],
-            "responseData" => $formattedResponse
-        ];
-    }
-
-    public function cancelPayment(array $requestBody): array
-    {
-        try {
-            $request = new CancellationRequest(
-                $requestBody['paymentId'],
-                $requestBody['requestId'],
-                $requestBody['authorizationId'],
-                $requestBody['sandboxMode']
-            );
-        } catch (\Throwable $th) {
-            throw new \Exception('Invalid Request Body', 400);
-        }
-
-        // format request info according to provider definition
-        $requestAsArray = $request->toArray();
-
-        // call provider to process the request
-        $providerResponseArray = $this->providerService->processCancellation($requestAsArray);
-
-        // format response according to PPP definitions
-        $formattedResponse = [
-            "paymentId" => $request->paymentId(),
-            "requestId" => $request->requestId(),
-            "cancellationId" => $providerResponseArray["cancellationId"],
-        ];
-
-        if (isset($providerResponseArray["code"])) {
-            $formattedResponse["code"] = $providerResponseArray["code"];
-        }
-
-        if (isset($providerResponseArray["message"])) {
-            $formattedResponse["message"] = $providerResponseArray["message"];
-        }
-
-        return [
-            "responseCode" => $providerResponseArray["responseCode"],
-            "responseData" => $formattedResponse
+            ]
         ];
     }
 
@@ -401,5 +285,52 @@ class Connector
         if ($error) {
             error_log($error);
         }
+    }
+
+    public function cancelPayment(array $requestBody): array
+    {
+        try {
+            $request = CancellationRequest::fromArray($requestBody);
+        } catch (\Throwable $th) {
+            throw new \Exception('Invalid Request Body', 400);
+        }
+
+        $providerResponse = $this->providerService->processCancellation($requestAsArray);
+
+        // format response according to PPP definitions
+        $formattedResponse = [
+            "paymentId" => $request->paymentId(),
+            "requestId" => $request->requestId(),
+            "cancellationId" => $providerResponseArray["cancellationId"],
+        ];
+
+        if (isset($providerResponseArray["code"])) {
+            $formattedResponse["code"] = $providerResponseArray["code"];
+        }
+
+        if (isset($providerResponseArray["message"])) {
+            $formattedResponse["message"] = $providerResponseArray["message"];
+        }
+
+        return [
+            "responseCode" => $providerResponseArray["responseCode"],
+            "responseData" => $formattedResponse
+        ];
+    }
+
+    function refundPayment(array $requestBody): array
+    {
+        try {
+            $request =  RefundRequest::fromArray($requestBody);
+        } catch (\Throwable $th) {
+            throw new \Exception('Invalid Request Body', 400);
+        }
+
+        $refundResponse = $this->providerService->processRefund($request);
+
+        return [
+            "responseCode" => $refundResponse->responseCode(),
+            "responseData" => $refundResponse->asArray()
+        ];
     }
 }

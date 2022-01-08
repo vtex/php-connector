@@ -49,7 +49,7 @@ if ($verb === 'GET') {
             break;
 
         case 'manifest':
-            $response = $connector->listPaymentProviderManifest();
+            $response = $connector->listPaymentProviderManifestAction();
             break;
 
         default:

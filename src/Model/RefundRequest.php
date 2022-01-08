@@ -38,6 +38,20 @@ class RefundRequest
         $this->sandboxMode = $sandboxMode ?? false;
     }
 
+    public static function fromArray(array $array): self
+    {
+        return new self(
+            $array['requestId'],
+            $array['settleId'],
+            $array['paymentId'],
+            $array['tid'] ?? null,
+            (float) $array['value'],
+            $array['transactionId'],
+            $array['recipients'] ?? null,
+            $array['sandboxMode'] ?? null
+        );
+    }
+
     public function requestId(): string
     {
         return $this->requestId;

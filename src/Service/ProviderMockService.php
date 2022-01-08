@@ -2,16 +2,11 @@
 
 namespace PhpConnector\Service;
 
+use PhpConnector\Model\RefundRequest;
+use PhpConnector\Model\RefundResponse;
+
 class ProviderMockService implements ProviderServiceInterface
 {
-
-    private static $refundNotSupportedResponse = [
-        "refundId" => null,
-        "value" => 0,
-        "code" => "refund-manually",
-        "message" => "Refund should be done manually",
-        "responseCode" => 501
-    ];
 
     private static $cancellationNotSupportedResponse = [
         "refundId" => null,
@@ -48,65 +43,6 @@ class ProviderMockService implements ProviderServiceInterface
         "tid" => "TID-7B58BE1A08",
     ];
 
-    /**
-     * This functions should do some checks on the request e.g.:
-     * check if the request is valid, confirm that is settled,
-     * confirm that the value is less than or equal to original settlement value
-     *
-     * @param array $requestArray Array containing the request information
-     *      $requestArray = [
-     *          "requestId" => $this->requestId,
-     *          "settleId" => $this->settleId,
-     *          "paymentId" => $this->paymentId,
-     *          "tid" => $this->tid,
-     *          "value" => $this->value,
-     *          "transactionId" => $this->transactionId,
-     *          "recipients" => $this->recipients,
-     *          sandboxMode" => $this->sandboxMode,
-     *      ]
-     * @return array
-     */
-    public function processRefund(array $requestArray): array
-    {
-        if ($requestArray["value"] > 100) {
-            try {
-                return $this->refundInFull($requestArray);
-            } catch (\Throwable $th) {;
-                return [
-                    "refundId" => null,
-                    "value" => 0,
-                    "code" => $th->getCode(),
-                    "message" => "Refund has failed due to an internal error",
-                    "responseCode" => 500
-                ];
-            }
-        } else {
-            return self::$refundNotSupportedResponse;
-        }
-    }
-
-    private function nextRefundId(): string
-    {
-        return bin2hex(random_bytes(10));
-    }
-
-    private function refundInFull($requestArray): array
-    {
-        $refundId = $this->nextRefundId();
-
-        // Do some transactions to execute the refund
-        if ($requestArray["value"] > 1000) {
-            throw new \Exception('Cannot refund', 500);
-        }
-
-        return [
-            "refundId" => $refundId,
-            "value" => $requestArray["value"],
-            "message" => "Successfully refunded",
-            "responseCode" => 200
-        ];
-    }
-
 
     public function processCancellation(array $requestArray): array
     {
@@ -125,6 +61,28 @@ class ProviderMockService implements ProviderServiceInterface
     }
 
     private function nextCancellationId(): string
+    {
+        return bin2hex(random_bytes(10));
+    }
+
+    /**
+     * This functions should do some checks on the request e.g.:
+     * check if the request is valid, confirm that is settled,
+     * confirm that the value is less than or equal to original settlement value
+     */
+    public function processRefund(RefundRequest $request): RefundResponse
+    {
+        if ($request->value() > 100 && $request->value() < 1000) {
+            $refundId = $this->nextRefundId();
+            return RefundResponse::approved($request, $refundId);
+        } elseif ($request->value() > 1000) {
+            return RefundResponse::denied($request);
+        } else {
+            return RefundResponse::manual($request);
+        }
+    }
+
+    private function nextRefundId(): string
     {
         return bin2hex(random_bytes(10));
     }
