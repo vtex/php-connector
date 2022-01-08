@@ -93,7 +93,7 @@ class Connector
                 $requestBody['sandboxMode']
             );
         } catch (\Throwable $th) {
-            throw new Exception('Invalid Request Body', 400);
+            throw new \Exception('Invalid Request Body', 400);
         }
 
         // assuming that provider expects an array as input
@@ -134,7 +134,7 @@ class Connector
                 $requestBody['sandboxMode']
             );
         } catch (\Throwable $th) {
-            throw new Exception('Invalid Request Body', 400);
+            throw new \Exception('Invalid Request Body', 400);
         }
 
         // format request info according to provider definition
@@ -358,7 +358,7 @@ class Connector
         return;
     } */
 
-    public function retry($requestBody)
+    public function retry($requestBody, $credentials)
     {
         error_log("passei aqui"); //
         $response = [
@@ -383,7 +383,9 @@ class Connector
             CURLOPT_POSTFIELDS => $payload,
             CURLOPT_HTTPHEADER => [
                 "Accept: application/json",
-                "Content-Type: application/json"
+                "Content-Type: application/json",
+                "X-VTEX-API-AppKey: {$credentials["X-VTEX-API-AppKey"]}",
+                "X-VTEX-API-AppToken: {$credentials["X-VTEX-API-AppToken"]}"
             ],
         ]);
 

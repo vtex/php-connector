@@ -21,6 +21,11 @@ $path = end($urlPieces);
  */
 $headers = getallheaders();
 
+$credentials = [
+    "X-VTEX-API-AppKey" => $headers["X-VTEX-API-AppKey"] ?? null,
+    "X-VTEX-API-AppToken" => $headers["X-VTEX-API-AppToken"] ?? null
+];
+
 set_exception_handler(function ($e) {
 	$code = $e->getCode() ?: 400;
 	header("Content-Type: application/json", false, $code);
@@ -84,5 +89,5 @@ header("Accept: application/json");
 echo json_encode($response);
 
 if (isset($response["status"]) && $response["status"] === 'undefined') {
-    $connector->retry($requestBody);
+    $connector->retry($requestBody, $credentials);
 }
