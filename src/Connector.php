@@ -361,8 +361,6 @@ class Connector
 
     public function retry($requestBody, $credentials)
     {
-        error_log($credentials["X-VTEX-API-AppKey"]);
-        error_log($credentials["X-VTEX-API-AppToken"]);
         $response = [
             "paymentId" =>  $requestBody['paymentId'],
             "status" => "denied",
@@ -393,10 +391,14 @@ class Connector
         ]);
 
         $response = curl_exec($curl);
-        $httpcode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        // $error = curl_error($curl);
+        $error = curl_error($curl);
 
         curl_close($curl);
-        error_log("X-VTEX-API-AppKey: {$credentials["X-VTEX-API-AppKey"]}");
+
+        if ($error) {
+            error_log($error);
+        } else {
+            error_log($response);
+        }
     }
 }

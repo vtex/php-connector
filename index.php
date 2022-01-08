@@ -41,7 +41,7 @@ set_exception_handler(function ($e) {
 });
 
 $providerService = new ProviderMockService;
-$connector = new Connector($callerIsTestSuite, $providerService);
+$connector = new Connector($isTestRequest, $providerService);
 
 if ($verb === 'GET') {
     switch ($path) {
