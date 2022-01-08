@@ -295,26 +295,11 @@ class Connector
             throw new \Exception('Invalid Request Body', 400);
         }
 
-        $providerResponse = $this->providerService->processCancellation($requestAsArray);
-
-        // format response according to PPP definitions
-        $formattedResponse = [
-            "paymentId" => $request->paymentId(),
-            "requestId" => $request->requestId(),
-            "cancellationId" => $providerResponseArray["cancellationId"],
-        ];
-
-        if (isset($providerResponseArray["code"])) {
-            $formattedResponse["code"] = $providerResponseArray["code"];
-        }
-
-        if (isset($providerResponseArray["message"])) {
-            $formattedResponse["message"] = $providerResponseArray["message"];
-        }
+        $cancellationResponse = $this->providerService->processCancellation($request);
 
         return [
-            "responseCode" => $providerResponseArray["responseCode"],
-            "responseData" => $formattedResponse
+            "responseCode" => $cancellationResponse->responseCode(),
+            "responseData" => $cancellationResponse->asArray()
         ];
     }
 

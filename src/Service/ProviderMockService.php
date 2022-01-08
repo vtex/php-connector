@@ -4,18 +4,11 @@ namespace PhpConnector\Service;
 
 use PhpConnector\Model\RefundRequest;
 use PhpConnector\Model\RefundResponse;
+use PhpConnector\Model\CancellationRequest;
+use PhpConnector\Model\CancellationResponse;
 
 class ProviderMockService implements ProviderServiceInterface
 {
-
-    private static $cancellationNotSupportedResponse = [
-        "refundId" => null,
-        "value" => 0,
-        "code" => "cancel-manually",
-        "message" => "This payment needs to be manually cancelled",
-        "responseCode" => 501
-    ];
-
     private static $creditCardPaymentApprovedResponse = [
         "status" => "approved",
         "authorizationId" => "AUT-09DC5E8F03",
@@ -44,20 +37,15 @@ class ProviderMockService implements ProviderServiceInterface
     ];
 
 
-    public function processCancellation(array $requestArray): array
+    public function processCancellation(CancellationRequest $request): CancellationResponse
     {
         $cancellationId = $this->nextCancellationId();
 
-        if (isset($requestArray["authorizationId"])) {
-            return self::$cancellationNotSupportedResponse;
+        if (!is_null($request->requestId())) {
+            return CancellationResponse::notSupported($request);
         }
 
-        return [
-            "cancellationId" => $cancellationId,
-            "value" => $requestArray["value"],
-            "message" => "Successfully cancelled",
-            "responseCode" => 200
-        ];
+        return CancellationResponse::approved($request, $cancellationId);
     }
 
     private function nextCancellationId(): string

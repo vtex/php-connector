@@ -23,7 +23,17 @@ class CancellationRequest
         $this->paymentId = $paymentId;
         $this->requestId = $requestId;
         $this->authorizationId = $authorizationId;
-        $this->sandboxMode = $sandboxMode ?? false;
+        $this->sandboxMode = $sandboxMode;
+    }
+
+    public static function fromArray(array $array): self
+    {
+        return new self(
+            $array['paymentId'],
+            $array['requestId'],
+            $array['authorizationId'],
+            $array['sandboxMode'] ?? false
+        );
     }
 
     public function paymentId(): string
