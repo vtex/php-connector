@@ -2,6 +2,8 @@
 
 namespace PhpConnector;
 
+use PhpConnector\Service\ProviderServiceInterface;
+
 class Connector
 {
     private $isTestRequest;
@@ -13,7 +15,7 @@ class Connector
         $this->providerService = $providerService;
     }
 
-    function listPaymentMethods(): array
+    function listPaymentMethodsAction(): array
     {
         return [
             "paymentMethods" => [
@@ -42,7 +44,7 @@ class Connector
                     "allowsSplit" => "disabled"
                 ],
             ],
-            "customFields" => [
+            /* "customFields" => [
                 [
                     "name" => "Merchant's custom field",
                     "type" => "text"
@@ -69,7 +71,7 @@ class Connector
             "autoSettleDelay" => [
                 "minimum" => "0",
                 "maximum" => "720"
-            ]
+            ] */
         ];
     }
 
@@ -361,6 +363,7 @@ class Connector
 
     public function retry($requestBody, $credentials)
     {
+        sleep(1);
         $response = [
             "paymentId" =>  $requestBody['paymentId'],
             "status" => "denied",
@@ -397,8 +400,6 @@ class Connector
 
         if ($error) {
             error_log($error);
-        } else {
-            error_log($response);
         }
     }
 }

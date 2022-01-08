@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpConnector;
+namespace PhpConnector\Model;
 
 /**
  * Item Class validates that the request body contains all the necessary parameters

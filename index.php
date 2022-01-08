@@ -3,7 +3,7 @@
 require 'vendor/autoload.php';
 
 use PhpConnector\Connector;
-use PhpConnector\ProviderMockService;
+use PhpConnector\Service\ProviderMockService;
 
 // handle requests by verb and path
 $verb = $_SERVER['REQUEST_METHOD'];
@@ -15,10 +15,9 @@ $path = end($urlPieces);
 /* question: should we ensure Content-Type: application/json and Accept: application/json
  * for all endpoints?
  * What does it mean that X-VTEX-API headers are "optional configuration"?
+ * Checked: vtex headers are not sent on gets
  */
 $headers = getallheaders();
-
-error_log(json_encode($headers));
 
 // test suite is sending headers different from expected, should be X-VTEX-API-AppKey &
 // X-VTEX-API-AppToken
@@ -46,7 +45,7 @@ $connector = new Connector($isTestRequest, $providerService);
 if ($verb === 'GET') {
     switch ($path) {
         case 'payment-methods':
-            $response = $connector->listPaymentMethods();
+            $response = $connector->listPaymentMethodsAction();
             break;
 
         case 'manifest':

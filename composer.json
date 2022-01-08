@@ -13,7 +13,6 @@
             "email": "michelly.teixeira@vtex.com.br"
         }
     ],
-    "require": {},
     "config": {
         "platform": {
             "php": "7.3"

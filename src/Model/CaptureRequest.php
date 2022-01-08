@@ -1,35 +1,34 @@
 <?php
 
-namespace PhpConnector;
+namespace PhpConnector\Model;
 
 /**
- * Refund Request Class validates that the request body contains all the necessary parameters
+ * Capture Request Class validates that the request body contains all the necessary parameters
  * with the expected type.
- * To-do: check if tid is really mandatory as documentation request params says. (Example doesn't show it)
  */
-class RefundRequest
+class CaptureRequest
 {
-    private $requestId;
-    private $settleId;
-    private $paymentId;
-    private $tid;
-    private $value;
     private $transactionId;
+    private $requestId;
+    private $paymentId;
+    private $value;
+    private $authorizationId;
+    private $tid;
     private $recipients;
     private $sandboxMode;
 
     public function __construct(
-        string $requestId,
-        string $settleId,
-        string $paymentId,
-        ?string $tid,
-        float $value,
         string $transactionId,
+        ?string $requestId,
+        string $paymentId,
+        float $value,
+        ?string $authorizationId, // docs says mandatory, but test doesn't send it
+        ?string $tid,
         ?array $recipients,
         ?bool $sandboxMode
     ) {
         $this->requestId = $requestId;
-        $this->settleId = $settleId;
+        $this->authorizationId = $authorizationId;
         $this->paymentId = $paymentId;
         $this->tid = $tid;
         $this->value = $value;
@@ -38,14 +37,14 @@ class RefundRequest
         $this->sandboxMode = $sandboxMode ?? false;
     }
 
-    public function requestId(): string
+    public function requestId(): ?string
     {
         return $this->requestId;
     }
 
-    public function settleId(): string
+    public function authorizationId(): string
     {
-        return $this->settleId;
+        return $this->authorizationId;
     }
 
     public function paymentId(): string
@@ -81,12 +80,12 @@ class RefundRequest
     public function toArray(): array
     {
         return [
-            "requestId" => $this->requestId,
-            "settleId" => $this->settleId,
-            "paymentId" => $this->paymentId,
-            "tid" => $this->tid,
-            "value" => $this->value,
             "transactionId" => $this->transactionId,
+            "requestId" => $this->requestId,
+            "paymentId" => $this->paymentId,
+            "value" => $this->value,
+            "authorizationId" => $this->authorizationId,
+            "tid" => $this->tid,
             "recipients" => $this->recipients,
             "sandboxMode" => $this->sandboxMode,
         ];

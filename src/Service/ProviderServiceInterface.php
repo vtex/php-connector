@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpConnector;
+namespace PhpConnector\Service;
 
 interface ProviderServiceInterface
 {

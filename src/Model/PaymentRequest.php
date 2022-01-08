@@ -1,6 +1,6 @@
 <?php
 
-namespace PhpConnector;
+namespace PhpConnector\Model;
 
 /**
  * Payment Request Class validates that the request body contains all the necessary
