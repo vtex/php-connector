@@ -19,23 +19,24 @@ class Connector
         $this->credentials = $credentials;
     }
 
-    function listPaymentMethodsAction(): array
+    function listPaymentMethodsAction(): void
     {
-        return [
+        $paymentMethods = [
             "paymentMethods" => [
                 "Visa",
                 "Mastercard",
                 "American Express",
             ]
         ];
+        $this->returnWithDefaultHeaders(200, $paymentMethods);
     }
 
     /**
      * To-improve: TestSuit could test this endpoint.
      */
-    function listPaymentProviderManifestAction(): array
+    function listPaymentProviderManifestAction(): void
     {
-        return [
+        $manifest = [
             "paymentMethods" => [
                 [
                     "name" => "Visa",
@@ -51,6 +52,7 @@ class Connector
                 ],
             ]
         ];
+        $this->returnWithDefaultHeaders(200, $manifest);
     }
 
     public function createPaymentAction(array $requestBody): void

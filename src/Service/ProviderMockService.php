@@ -20,16 +20,16 @@ class ProviderMockService implements ProviderServiceInterface
         '4222222222222225' => 'asyncDeny',
     ];
 
-    private $isTestRequest;
+    private $clientIsTestSuite;
 
-    public function __construct(bool $isTestRequest)
+    public function __construct(bool $clientIsTestSuite)
     {
-        $this->isTestRequest = $isTestRequest;
+        $this->clientIsTestSuite = $clientIsTestSuite;
     }
 
     public function createPayment(CreatePaymentRequest $request): CreatePaymentResponse
     {
-        if ($this->isTestRequest && $request->isCreditCardPayment()) {
+        if ($this->clientIsTestSuite && $request->isCreditCardPayment()) {
             $creditCardNumber = $request->card()->cardNumber();
             $flow = $this->creditCardFlow[$creditCardNumber];
             return $this->$flow($request);

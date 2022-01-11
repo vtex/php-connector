@@ -12,11 +12,6 @@ $urlPieces = explode('/', $_SERVER['REQUEST_URI']);
 // this does not work for 'inbound-requests/:action'
 $path = end($urlPieces);
 
-/* question: should we ensure Content-Type: application/json and Accept: application/json
- * for all endpoints?
- * What does it mean that X-VTEX-API headers are "optional configuration"?
- * Checked: vtex headers are not sent on gets
- */
 $headers = getallheaders();
 
 // test suite is sending headers different from expected, should be X-VTEX-API-AppKey &
@@ -26,10 +21,10 @@ $credentials = [
     "token" => $headers["X-Vtex-Api-Apptoken"] ?? null
 ];
 
-$isTestRequest = false;
+$clientIsTestSuite = false;
 
 if (isset($headers["X-Vtex-Api-Is-Testsuite"]) && $headers["X-Vtex-Api-Is-Testsuite"] === 'true') {
-    $isTestRequest = true;
+    $clientIsTestSuite = true;
 }
 
 set_exception_handler(function ($e) {
@@ -65,7 +60,6 @@ if ($verb === 'GET') {
         case 'cancellations':
             $requestBody = json_decode(file_get_contents('php://input'), true);
             $connector->cancelPaymentAction($requestBody);
-
             break;
 
         case 'settlements':
@@ -76,7 +70,6 @@ if ($verb === 'GET') {
         case 'refunds':
             $requestBody = json_decode(file_get_contents('php://input'), true);
             $connector->refundPaymentAction($requestBody);
-
             break;
 
         default:
