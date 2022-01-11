@@ -10,13 +10,13 @@ use PhpConnector\Model\RefundRequest;
 
 class Connector
 {
-    private $isTestRequest;
     private $providerService = null;
+    private $credentials;
 
-    public function __construct(bool $isTestRequest, ProviderServiceInterface $providerService)
+    public function __construct(ProviderServiceInterface $providerService, array $credentials)
     {
-        $this->isTestRequest = $isTestRequest;
         $this->providerService = $providerService;
+        $this->credentials = $credentials;
     }
 
     function listPaymentMethodsAction(): array
@@ -53,7 +53,7 @@ class Connector
         ];
     }
 
-    public function createPayment(array $requestBody): array
+    public function createPaymentAction(array $requestBody): void
     {
         try {
             $request = CreatePaymentRequest::fromArray($requestBody);
@@ -63,13 +63,14 @@ class Connector
 
         $paymentResponse = $this->providerService->createPayment($request);
 
-        return [
-            "responseCode" => $paymentResponse->responseCode(),
-            "responseData" => $paymentResponse->asArray()
-        ];
+        $this->returnWithDefaultHeaders($paymentResponse->responseCode(), $paymentResponse->asArray());
+
+        if (!is_null($paymentResponse->retryResponse())) {
+            $this->retry($request, $paymentResponse->retryResponse()->asArray());
+        }
     }
 
-    public function cancelPayment(array $requestBody): array
+    public function cancelPaymentAction(array $requestBody): void
     {
         try {
             $request = CancellationRequest::fromArray($requestBody);
@@ -79,14 +80,11 @@ class Connector
 
         $cancellationResponse = $this->providerService->processCancellation($request);
 
-        return [
-            "responseCode" => $cancellationResponse->responseCode(),
-            "responseData" => $cancellationResponse->asArray()
-        ];
+        $this->returnWithDefaultHeaders($cancellationResponse->responseCode(), $cancellationResponse->asArray());
     }
 
 
-    public function capturePayment(array $requestBody): array
+    public function capturePaymentAction(array $requestBody): void
     {
         try {
             $request = CaptureRequest::fromArray($requestBody);
@@ -96,13 +94,10 @@ class Connector
 
         $settlementResponse = $this->providerService->processCapture($request);
 
-        return [
-            "responseCode" => $settlementResponse->responseCode(),
-            "responseData" => $settlementResponse->asArray()
-        ];
+        $this->returnWithDefaultHeaders($settlementResponse->responseCode(), $settlementResponse->asArray());
     }
 
-    function refundPayment(array $requestBody): array
+    function refundPaymentAction(array $requestBody): void
     {
         try {
             $request = RefundRequest::fromArray($requestBody);
@@ -112,9 +107,48 @@ class Connector
 
         $refundResponse = $this->providerService->processRefund($request);
 
-        return [
-            "responseCode" => $refundResponse->responseCode(),
-            "responseData" => $refundResponse->asArray()
-        ];
+        $this->returnWithDefaultHeaders($refundResponse->responseCode(), $refundResponse->asArray());
+    }
+
+    private function returnWithDefaultHeaders($responseCode, $arrayData): void
+    {
+        http_response_code($responseCode);
+        header("Content-Type: application/json");
+        header("Accept: application/json");
+        echo json_encode($arrayData);
+    }
+
+    private function retry(CreatePaymentRequest $request, $response)
+    {
+        sleep(1);
+
+        $curl = curl_init();
+
+        $payload = json_encode($response);
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $request->callbackUrl(),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_HTTPHEADER => [
+                "Accept: application/json",
+                "Content-Type: application/json",
+                "X-VTEX-API-AppKey: {$this->credentials["key"]}",
+                "X-VTEX-API-AppToken: {$this->credentials["token"]}"
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        $error = curl_error($curl);
+
+        curl_close($curl);
+
+        if ($error) {
+            error_log($error);
+        }
     }
 }

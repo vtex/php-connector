@@ -14,26 +14,58 @@ use PhpConnector\Model\RefundResponse;
 class ProviderMockService implements ProviderServiceInterface
 {
     private $creditCardFlow = [
-        '4444333322221111' => 'Authorize',
-        '4444333322221112' => 'Denied',
-        '4222222222222224' => 'AsyncApproved',
-        '4222222222222225' => 'AsyncDenied',
-        null =>  'Redirect',
+        '4444333322221111' => 'authorizePayment',
+        '4444333322221112' => 'denyPayment',
+        '4222222222222224' => 'asyncApprove',
+        '4222222222222225' => 'asyncDeny',
     ];
+
+    private $isTestRequest;
+
+    public function __construct(bool $isTestRequest)
+    {
+        $this->isTestRequest = $isTestRequest;
+    }
 
     public function createPayment(CreatePaymentRequest $request): CreatePaymentResponse
     {
-        $creditCardNumber = $request->card()->cardNumber();
-        $creditCardIsValid = $this->validateCreditCard($creditCardNumber);
-
-        if ($creditCardIsValid) {
-            return self::$creditCardPaymentApprovedResponse;
-        } elseif ($creditCardNumber === "4222222222222225" || $creditCardNumber === "4222222222222224") {
-            return self::$creditCardPaymentProcessing;
+        if ($this->isTestRequest && $request->isCreditCardPayment()) {
+            $creditCardNumber = $request->card()->cardNumber();
+            $flow = $this->creditCardFlow[$creditCardNumber];
+            return $this->$flow($request);
         } else {
-            return self::$creditCardPaymentDeniedResponse;
+            throw new \Exception("Not implemented", 501);
         }
     }
+
+    private function authorizePayment(CreatePaymentRequest $request): CreatePaymentResponse
+    {
+        return CreatePaymentResponse::approved(
+            $request,
+            bin2hex(random_bytes(10)),
+            bin2hex(random_bytes(10)),
+            bin2hex(random_bytes(10)),
+            "TestPay"
+        );
+    }
+
+    private function denyPayment(CreatePaymentRequest $request): CreatePaymentResponse
+    {
+        return CreatePaymentResponse::denied(
+            $request,
+            bin2hex(random_bytes(10))
+        );
+    }
+
+    private function asyncApprove(CreatePaymentRequest $request): CreatePaymentResponse
+    {
+        return CreatePaymentResponse::pending(
+            $request,
+            bin2hex(random_bytes(10)),
+            $this->authorizePayment($request),
+        );
+    }
+
 
     public function processCancellation(CancellationRequest $request): CancellationResponse
     {
@@ -83,47 +115,5 @@ class ProviderMockService implements ProviderServiceInterface
     private function nextRefundId(): string
     {
         return bin2hex(random_bytes(10));
-    }
-
-    private function retry($requestBody, $credentials)
-    {
-        sleep(1);
-        $response = [
-            "paymentId" =>  $requestBody['paymentId'],
-            "status" => "denied",
-            "authorizationId" => null,
-            "tid" => "TID-7B58BE1A08",
-            "code" => "OperationDeniedCode",
-            "message" => "Credit card payment denied"
-        ];
-
-        $curl = curl_init();
-
-        $payload = json_encode($response);
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $requestBody['callbackUrl'],
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => "",
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => "POST",
-            CURLOPT_POSTFIELDS => $payload,
-            CURLOPT_HTTPHEADER => [
-                "Accept: application/json",
-                "Content-Type: application/json",
-                "X-VTEX-API-AppKey: {$credentials["key"]}",
-                "X-VTEX-API-AppToken: {$credentials["token"]}"
-            ],
-        ]);
-
-        $response = curl_exec($curl);
-        $error = curl_error($curl);
-
-        curl_close($curl);
-
-        if ($error) {
-            error_log($error);
-        }
     }
 }

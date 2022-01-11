@@ -41,6 +41,21 @@ class CreatePaymentRequest
     private $callbackUrl;
     private $returnUrl;
 
+    private $creditCardList = [
+        "Visa",
+        "Mastercard",
+        "American Express",
+        "Discover",
+        "JCB",
+        "Diners",
+        "Elo",
+        "Hipercard",
+        "Aura",
+        "Benricompras",
+        "Credz",
+        "Cabal",
+    ];
+
 
     public function __construct(
         string $reference,
@@ -244,5 +259,10 @@ class CreatePaymentRequest
     public function callbackUrl(): string
     {
         return $this->callbackUrl;
+    }
+
+    public function isCreditCardPayment(): bool
+    {
+        return in_array($this->paymentMethod, $this->creditCardList);
     }
 }

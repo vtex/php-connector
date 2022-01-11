@@ -7,7 +7,7 @@ use PhpConnector\Model\CreatePaymentRequest;
 class CreatePaymentResponse
 {
 
-    private static $creditCardPaymentDeniedResponse = [
+/*     private static $creditCardPaymentDeniedResponse = [
         "status" => "denied",
         "authorizationId" => null,
         "tid" => "TID-7B58BE1A08",
@@ -32,7 +32,7 @@ class CreatePaymentResponse
         "delayToAutoSettleAfterAntifraud" => 1800,
         "delayToCancel" => 21600,
         "maxValue" => 1000,
-    ];
+    ]; */
 
     private $paymentId;
     private $status;
@@ -46,6 +46,7 @@ class CreatePaymentResponse
     private $delayToAutoSettleAfterAntiFraud;
     private $delayToCancel;
     private $maxValue;
+    private $retryResponse;
 
     public function __construct(
         ?string $paymentId,
@@ -59,7 +60,8 @@ class CreatePaymentResponse
         ?int $delayToAutoSettle,
         ?int $delayToAutoSettleAfterAntiFraud,
         ?int $delayToCancel,
-        ?float $maxValue
+        ?float $maxValue,
+        ?self $retryResponse
     ) {
         $this->paymentId = $paymentId;
         $this->status = $status;
@@ -73,25 +75,67 @@ class CreatePaymentResponse
         $this->delayToAutoSettleAfterAntiFraud = $delayToAutoSettleAfterAntiFraud;
         $this->delayToCancel = $delayToCancel;
         $this->maxValue = $maxValue;
+        $this->retryResponse = $retryResponse;
     }
 
-    public static function approved(CreatePaymentRequest $request, $status, $authorizationId, $tid, $nsu, $acquirer): self
+    public static function approved(CreatePaymentRequest $request, $authorizationId, $tid, $nsu, $acquirer): self
     {
         return new self(
             $request->paymentId(),
-            $status,
+            "approved",
             $authorizationId,
             $tid,
             $nsu,
             $acquirer,
-            "OperationApprovedCode",
-            "Approved",
+            "OperationDeniedCode",
+            "Credit card payment denied",
             21600,
             1800,
             21600,
-            1000
+            1000,
+            null,
         );
     }
+
+    public static function denied(CreatePaymentRequest $request, $tid): self
+    {
+        return new self(
+            $request->paymentId(),
+            "denied",
+            null,
+            $tid,
+            null,
+            null,
+            "OperationApprovedCode",
+            "Approved",
+            null,
+            null,
+            null,
+            null,
+            null
+        );
+    }
+
+    public static function pending(CreatePaymentRequest $request, $tid, $retryResponse): self
+    {
+        return new self(
+            $request->paymentId(),
+            "undefined",
+            null,
+            $tid,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            $retryResponse
+        );
+    }
+
+
 
     public function asArray(): array
     {
@@ -132,5 +176,10 @@ class CreatePaymentResponse
     public function responseCode(): int
     {
         return 200;
+    }
+
+    public function retryResponse(): ?self
+    {
+        return $this->retryResponse;
     }
 }

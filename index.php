@@ -39,8 +39,8 @@ set_exception_handler(function ($e) {
 	exit;
 });
 
-$providerService = new ProviderMockService;
-$connector = new Connector($isTestRequest, $providerService);
+$providerService = new ProviderMockService($isTestRequest);
+$connector = new Connector($providerService, $credentials);
 
 if ($verb === 'GET') {
     switch ($path) {
@@ -59,31 +59,24 @@ if ($verb === 'GET') {
     switch ($path) {
         case 'payments':
             $requestBody = json_decode(file_get_contents('php://input'), true);
-            $response = $connector->createPayment($requestBody);
+            $connector->createPaymentAction($requestBody);
             break;
 
         case 'cancellations':
             $requestBody = json_decode(file_get_contents('php://input'), true);
-            $cancellationResponse = $connector->cancelPayment($requestBody);
-            $responseCode = $cancellationResponse["responseCode"];
-            http_response_code($responseCode);
-            $response = $cancellationResponse["responseData"];
+            $connector->cancelPaymentAction($requestBody);
+
             break;
 
         case 'settlements':
             $requestBody = json_decode(file_get_contents('php://input'), true);
-            $refundResponse = $connector->capturePayment($requestBody);
-            $responseCode = $refundResponse["responseCode"];
-            http_response_code($responseCode);
-            $response = $refundResponse["responseData"];
+            $connector->capturePaymentAction($requestBody);
             break;
 
         case 'refunds':
             $requestBody = json_decode(file_get_contents('php://input'), true);
-            $refundResponse = $connector->refundPayment($requestBody);
-            $responseCode = $refundResponse["responseCode"];
-            http_response_code($responseCode);
-            $response = $refundResponse["responseData"];
+            $connector->refundPaymentAction($requestBody);
+
             break;
 
         default:
@@ -91,14 +84,4 @@ if ($verb === 'GET') {
     }
 } else {
     throw new Exception('Method Not Supported', 405);
-}
-
-header("Content-Type: application/json");
-header("Accept: application/json");
-echo json_encode($response);
-
-
-// this could be better, but it's very hard to set async with php
-if (isset($response["status"]) && $response["status"] === 'undefined') {
-    $connector->retry($requestBody, $credentials);
 }
