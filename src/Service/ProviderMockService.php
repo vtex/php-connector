@@ -103,11 +103,6 @@ class ProviderMockService implements ProviderServiceInterface
         return bin2hex(random_bytes(10));
     }
 
-    /**
-     * This functions should do some checks on the request e.g.:
-     * check if the request is valid, confirm that is settled,
-     * confirm that the value is less than or equal to original settlement value
-     */
     public function processRefund(RefundRequest $request): RefundResponse
     {
         if ($request->value() > 100 && $request->value() < 1000) {

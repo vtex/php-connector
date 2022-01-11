@@ -14,6 +14,13 @@ $path = end($urlPieces);
 
 $headers = getallheaders();
 
+set_exception_handler(function ($e) {
+    $code = $e->getCode() ?: 400;
+    header("Content-Type: application/json", false, $code);
+    echo json_encode(["error" => $e->getMessage()]);
+    exit;
+});
+
 // test suite is sending headers different from expected, should be X-VTEX-API-AppKey &
 // X-VTEX-API-AppToken
 $credentials = [
@@ -26,13 +33,6 @@ $clientIsTestSuite = false;
 if (isset($headers["X-Vtex-Api-Is-Testsuite"]) && $headers["X-Vtex-Api-Is-Testsuite"] === 'true') {
     $clientIsTestSuite = true;
 }
-
-set_exception_handler(function ($e) {
-	$code = $e->getCode() ?: 400;
-	header("Content-Type: application/json", false, $code);
-	echo json_encode(["error" => $e->getMessage()]);
-	exit;
-});
 
 $providerService = new ProviderMockService($clientIsTestSuite);
 $connector = new Connector($providerService, $credentials);
