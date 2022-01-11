@@ -57,6 +57,15 @@ class ProviderMockService implements ProviderServiceInterface
         );
     }
 
+    private function asyncDeny(CreatePaymentRequest $request): CreatePaymentResponse
+    {
+        return CreatePaymentResponse::pending(
+            $request,
+            bin2hex(random_bytes(10)),
+            $this->denyPayment($request),
+        );
+    }
+
     private function asyncApprove(CreatePaymentRequest $request): CreatePaymentResponse
     {
         return CreatePaymentResponse::pending(
@@ -65,7 +74,6 @@ class ProviderMockService implements ProviderServiceInterface
             $this->authorizePayment($request),
         );
     }
-
 
     public function processCancellation(CancellationRequest $request): CancellationResponse
     {
