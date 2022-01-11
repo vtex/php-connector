@@ -2,6 +2,7 @@
 
 namespace PhpConnector\Service;
 
+use PhpConnector\Model\CreatePaymentRequest;
 use PhpConnector\Model\CancellationRequest;
 use PhpConnector\Model\CancellationResponse;
 use PhpConnector\Model\CaptureRequest;
@@ -17,5 +18,5 @@ interface ProviderServiceInterface
 
     public function processRefund(RefundRequest $request): RefundResponse;
 
-    public function createPayment($request): array;
+    public function createPayment(CreatePaymentRequest $request): array;
 }

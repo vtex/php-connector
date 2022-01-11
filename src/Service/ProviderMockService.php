@@ -2,6 +2,8 @@
 
 namespace PhpConnector\Service;
 
+use PhpConnector\Model\CreatePaymentRequest;
+use PhpConnector\Model\CreatePaymentResponse;
 use PhpConnector\Model\CancellationRequest;
 use PhpConnector\Model\CancellationResponse;
 use PhpConnector\Model\CaptureRequest;
@@ -11,33 +13,27 @@ use PhpConnector\Model\RefundResponse;
 
 class ProviderMockService implements ProviderServiceInterface
 {
-    private static $creditCardPaymentApprovedResponse = [
-        "status" => "approved",
-        "authorizationId" => "AUT-09DC5E8F03",
-        "tid" => "TID-7B58BE1A08",
-        "nsu" => "NSU-107521E866",
-        "acquirer" => "TestPay",
-        "code" => "OperationApprovedCode",
-        "message" => null,
-        "delayToAutoSettle" => 21600,
-        "delayToAutoSettleAfterAntifraud" => 1800,
-        "delayToCancel" => 21600,
-        "maxValue" => 1000,
+    private $creditCardFlow = [
+        '4444333322221111' => 'Authorize',
+        '4444333322221112' => 'Denied',
+        '4222222222222224' => 'AsyncApproved',
+        '4222222222222225' => 'AsyncDenied',
+        null =>  'Redirect',
     ];
 
-    private static $creditCardPaymentDeniedResponse = [
-        "status" => "denied",
-        "authorizationId" => null,
-        "tid" => "TID-7B58BE1A08",
-        "code" => "OperationDeniedCode",
-        "message" => "Credit card payment denied"
-    ];
+    public function createPayment(CreatePaymentRequest $request): CreatePaymentResponse
+    {
+        $creditCardNumber = $request->card()->cardNumber();
+        $creditCardIsValid = $this->validateCreditCard($creditCardNumber);
 
-    private static $creditCardPaymentProcessing = [
-        "status" => "undefined",
-        "tid" => "TID-7B58BE1A08",
-    ];
-
+        if ($creditCardIsValid) {
+            return self::$creditCardPaymentApprovedResponse;
+        } elseif ($creditCardNumber === "4222222222222225" || $creditCardNumber === "4222222222222224") {
+            return self::$creditCardPaymentProcessing;
+        } else {
+            return self::$creditCardPaymentDeniedResponse;
+        }
+    }
 
     public function processCancellation(CancellationRequest $request): CancellationResponse
     {
@@ -89,20 +85,6 @@ class ProviderMockService implements ProviderServiceInterface
         return bin2hex(random_bytes(10));
     }
 
-    public function createPayment($request): array
-    {
-        $creditCardNumber = $request->card()->cardNumber();
-        $creditCardIsValid = $this->validateCreditCard($creditCardNumber);
-
-        if ($creditCardIsValid) {
-            return self::$creditCardPaymentApprovedResponse;
-        } elseif ($creditCardNumber === "4222222222222225") {
-            return self::$creditCardPaymentProcessing;
-        } else {
-            return self::$creditCardPaymentDeniedResponse;
-        }
-    }
-
     /**
      * validates credit card with Luhn algorithm
      * https://stackoverflow.com/questions/174730/what-is-the-best-way-to-validate-a-credit-card-in-php
@@ -137,5 +119,47 @@ class ProviderMockService implements ProviderServiceInterface
 
         // If the total mod 10 equals 0, the number is valid
         return ($total % 10 == 0) ? true : false;
+    }
+
+    private function retry($requestBody, $credentials)
+    {
+        sleep(1);
+        $response = [
+            "paymentId" =>  $requestBody['paymentId'],
+            "status" => "denied",
+            "authorizationId" => null,
+            "tid" => "TID-7B58BE1A08",
+            "code" => "OperationDeniedCode",
+            "message" => "Credit card payment denied"
+        ];
+
+        $curl = curl_init();
+
+        $payload = json_encode($response);
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $requestBody['callbackUrl'],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "POST",
+            CURLOPT_POSTFIELDS => $payload,
+            CURLOPT_HTTPHEADER => [
+                "Accept: application/json",
+                "Content-Type: application/json",
+                "X-VTEX-API-AppKey: {$credentials["key"]}",
+                "X-VTEX-API-AppToken: {$credentials["token"]}"
+            ],
+        ]);
+
+        $response = curl_exec($curl);
+        $error = curl_error($curl);
+
+        curl_close($curl);
+
+        if ($error) {
+            error_log($error);
+        }
     }
 }
