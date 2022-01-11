@@ -34,7 +34,7 @@ set_exception_handler(function ($e) {
 	exit;
 });
 
-$providerService = new ProviderMockService($isTestRequest);
+$providerService = new ProviderMockService($clientIsTestSuite);
 $connector = new Connector($providerService, $credentials);
 
 if ($verb === 'GET') {
