@@ -68,6 +68,52 @@ Here is a snippet of the response for the endpoints defined:
 			"name": "American Express",
 			"allowsSplit": "disabled"
 		}
+	],
+	"customFields": [
+		{
+			"name": "DelayToAutoSettle - in seconds",
+			"type": "text"
+		},
+		{
+			"name": "Country of operation",
+			"type": "select",
+			"options": [
+				{
+					"text": "Brazil",
+					"value": "1"
+				},
+				{
+					"text": "Chile",
+					"value": "2"
+				},
+				{
+					"text": "Argentina",
+					"value": "3"
+				},
+				{
+					"text": "Colombia",
+					"value": "4"
+				},
+				{
+					"text": "Peru",
+					"value": "5"
+				}
+			]
+		},
+		{
+			"name": "Type of refund",
+			"type": "select",
+			"options": [
+				{
+					"text": "Automatic Whenever Possible",
+					"value": "1"
+				},
+				{
+					"text": "Manual",
+					"value": "2"
+				}
+			]
+		}
 	]
 }
 ```
