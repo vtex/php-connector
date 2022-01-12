@@ -128,7 +128,7 @@ class ProviderMockService implements ProviderServiceInterface
     }
 
     /**
-     * This function mocks the usage of the $requestType customField
+     * This function mocks the usage of the $refundType, "Type of refund" customField
      *
      * @param RefundRequest $request
      * @return RefundResponse
