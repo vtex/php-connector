@@ -13,12 +13,23 @@ use PhpConnector\Model\RefundResponse;
 
 class ProviderMockService implements ProviderServiceInterface
 {
-    private $creditCardFlow = [
+    private static $creditCardFlow = [
         '4444333322221111' => 'authorizePayment',
         '4444333322221112' => 'denyPayment',
         '4222222222222224' => 'asyncApprove',
         '4222222222222225' => 'asyncDeny',
     ];
+
+    private static $acquirerByCountry = [
+        "Brazil" => "Cielo",
+        "Chile" => "Transbank",
+        "Argentina" => "Prisma Medios de Pago",
+        "Colombia" => "Bancocolombia",
+        "Peru" => "VisaNet",
+        "undefined" => "TestPay"
+    ];
+
+    private static $delayToAutoSettleDefault = 21600;
 
     private $clientIsTestSuite;
 
@@ -31,21 +42,34 @@ class ProviderMockService implements ProviderServiceInterface
     {
         if ($this->clientIsTestSuite && $request->isCreditCardPayment()) {
             $creditCardNumber = $request->card()->cardNumber();
-            $flow = $this->creditCardFlow[$creditCardNumber];
+            $flow = self::$creditCardFlow[$creditCardNumber];
             return $this->$flow($request);
         } else {
             throw new \Exception("Not implemented", 501);
         }
     }
 
+    /**
+     * This function mocks the usage of the countryOfOperation and delayToAutoSettle customFields
+     *
+     * @param CreatePaymentRequest $request
+     * @return CreatePaymentResponse
+     */
     private function authorizePayment(CreatePaymentRequest $request): CreatePaymentResponse
     {
+        $countryOfOperationAsString = $request->merchantSettings()->countryOfOperationAsString();
+
+        $acquirer = self::$acquirerByCountry[$countryOfOperationAsString];
+
+        $delayToAutoSettle = $request->merchantSettings()->delayToAutoSettle() ?? self::$delayToAutoSettleDefault;
+
         return CreatePaymentResponse::approved(
             $request,
             bin2hex(random_bytes(10)),
             bin2hex(random_bytes(10)),
             bin2hex(random_bytes(10)),
-            "TestPay"
+            $acquirer,
+            $delayToAutoSettle
         );
     }
 
@@ -103,14 +127,22 @@ class ProviderMockService implements ProviderServiceInterface
         return bin2hex(random_bytes(10));
     }
 
+    /**
+     * This function mocks the usage of the $requestType customField
+     *
+     * @param RefundRequest $request
+     * @return RefundResponse
+     */
     public function processRefund(RefundRequest $request): RefundResponse
     {
-        if ($request->value() > 100 && $request->value() < 1000) {
+        if ($request->merchantSettings()->isAutomaticRefund() && $request->value() < 1000) {
             $refundId = $this->nextRefundId();
             return RefundResponse::approved($request, $refundId);
-        } elseif ($request->value() > 1000) {
+        } elseif ($request->merchantSettings()->isAutomaticRefund() && $request->value() > 1000) {
             return RefundResponse::denied($request);
-        } else {
+        }
+
+        if ($request->merchantSettings()->isManualRefund()) {
             return RefundResponse::manual($request);
         }
     }

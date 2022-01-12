@@ -13,17 +13,21 @@ class CancellationRequest
     private $requestId;
     private $authorizationId;
     private $sandboxMode;
+    private $merchantSettings;
+
 
     public function __construct(
         string $paymentId,
         string $requestId,
         ?string $authorizationId,
-        ?bool $sandboxMode
+        ?bool $sandboxMode,
+        MerchantSettings $merchantSettings
     ) {
         $this->paymentId = $paymentId;
         $this->requestId = $requestId;
         $this->authorizationId = $authorizationId;
         $this->sandboxMode = $sandboxMode;
+        $this->merchantSettings = $merchantSettings;
     }
 
     public static function fromArray(array $array): self
@@ -32,7 +36,8 @@ class CancellationRequest
             $array['paymentId'],
             $array['requestId'],
             $array['authorizationId'],
-            $array['sandboxMode'] ?? false
+            $array['sandboxMode'] ?? false,
+            isset($array['merchantSettings']) ? MerchantSettings::fromArray($array['merchantSettings']) : new MerchantSettings(),
         );
     }
 
@@ -54,6 +59,11 @@ class CancellationRequest
     public function sandboxMode(): bool
     {
         return $this->sandboxMode;
+    }
+
+    public function merchantSettings(): MerchantSettings
+    {
+        return $this->merchantSettings;
     }
 
     public function toArray(): array

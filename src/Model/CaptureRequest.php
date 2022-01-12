@@ -16,6 +16,7 @@ class CaptureRequest
     private $tid;
     private $recipients;
     private $sandboxMode;
+    private $merchantSettings;
 
     public function __construct(
         string $transactionId,
@@ -25,7 +26,8 @@ class CaptureRequest
         ?string $authorizationId, // docs says mandatory, but test doesn't send it
         ?string $tid,
         ?array $recipients,
-        ?bool $sandboxMode
+        ?bool $sandboxMode,
+        MerchantSettings $merchantSettings
     ) {
         $this->requestId = $requestId;
         $this->authorizationId = $authorizationId;
@@ -35,6 +37,7 @@ class CaptureRequest
         $this->transactionId = $transactionId;
         $this->recipients = $recipients;
         $this->sandboxMode = $sandboxMode ?? false;
+        $this->merchantSettings = $merchantSettings;
     }
 
     public static function fromArray(array $array): self
@@ -47,7 +50,8 @@ class CaptureRequest
             $array['authorizationId'] ?? null, // docs says mandatory, but test doesn't send it
             $array['tid'] ?? null,
             $array['recipients'] ?? null,
-            $array['sandboxMode'] ?? false
+            $array['sandboxMode'] ?? false,
+            isset($array['merchantSettings']) ? MerchantSettings::fromArray($array['merchantSettings']) : new MerchantSettings(),
         );
     }
 
@@ -89,6 +93,11 @@ class CaptureRequest
     public function sandboxMode(): bool
     {
         return $this->sandboxMode;
+    }
+
+    public function merchantSettings(): MerchantSettings
+    {
+        return $this->merchantSettings;
     }
 
     public function toArray(): array

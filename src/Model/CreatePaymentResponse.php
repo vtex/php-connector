@@ -78,7 +78,14 @@ class CreatePaymentResponse
         $this->retryResponse = $retryResponse;
     }
 
-    public static function approved(CreatePaymentRequest $request, $authorizationId, $tid, $nsu, $acquirer): self
+    public static function approved(
+        CreatePaymentRequest $request,
+        $authorizationId,
+        $tid,
+        $nsu,
+        $acquirer,
+        $delayToAutoSettle
+    ): self
     {
         return new self(
             $request->paymentId(),
@@ -89,7 +96,7 @@ class CreatePaymentResponse
             $acquirer,
             "OperationDeniedCode",
             "Credit card payment denied",
-            21600,
+            $delayToAutoSettle,
             1800,
             21600,
             1000,

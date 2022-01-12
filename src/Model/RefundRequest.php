@@ -17,6 +17,7 @@ class RefundRequest
     private $transactionId;
     private $recipients;
     private $sandboxMode;
+    private $merchantSettings;
 
     public function __construct(
         string $requestId,
@@ -26,7 +27,8 @@ class RefundRequest
         float $value,
         string $transactionId,
         ?array $recipients,
-        ?bool $sandboxMode
+        ?bool $sandboxMode,
+        MerchantSettings $merchantSettings
     ) {
         $this->requestId = $requestId;
         $this->settleId = $settleId;
@@ -36,6 +38,7 @@ class RefundRequest
         $this->transactionId = $transactionId;
         $this->recipients = $recipients;
         $this->sandboxMode = $sandboxMode ?? false;
+        $this->merchantSettings = $merchantSettings;
     }
 
     public static function fromArray(array $array): self
@@ -48,7 +51,8 @@ class RefundRequest
             (float) $array['value'],
             $array['transactionId'],
             $array['recipients'] ?? null,
-            $array['sandboxMode'] ?? null
+            $array['sandboxMode'] ?? null,
+            isset($array['merchantSettings']) ? MerchantSettings::fromArray($array['merchantSettings']) : new MerchantSettings(null, null, null)
         );
     }
 
@@ -90,6 +94,11 @@ class RefundRequest
     public function sandboxMode(): bool
     {
         return $this->sandboxMode;
+    }
+
+    public function merchantSettings(): MerchantSettings
+    {
+        return $this->merchantSettings;
     }
 
     public function toArray(): array

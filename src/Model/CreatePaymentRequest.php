@@ -32,7 +32,7 @@ class CreatePaymentRequest
     private $billingAddress;
     private $items;
     private $recipients; // why docs says this argument is optional? does it apply only to split payments?
-    private $merchantSettings; // check if merchantName is same as here is Settings
+    private $merchantSettings;
     private $url;
     private $inboundRequestUrl;
     private $secureProxyUrl;
@@ -82,7 +82,7 @@ class CreatePaymentRequest
         Address $billingAddress,
         array $items,
         ?array $recipients,
-        ?array $merchantSettings,
+        MerchantSettings $merchantSettings,
         string $url,
         ?string $inboundRequestUrl,
         ?string $secureProxyUrl,
@@ -235,7 +235,7 @@ class CreatePaymentRequest
             $billingAddress,
             $items,
             $recipients,
-            $array['merchantSettings'] ?? null,
+            isset($array['merchantSettings']) ? MerchantSettings::fromArray($array['merchantSettings']) : new MerchantSettings(),
             $array['url'] ?? null,
             $array['inboundRequestUrl'] ?? null,
             $array['secureProxyUrl'] ?? null,
@@ -264,5 +264,10 @@ class CreatePaymentRequest
     public function isCreditCardPayment(): bool
     {
         return in_array($this->paymentMethod, $this->creditCardList);
+    }
+
+    public function merchantSettings(): MerchantSettings
+    {
+        return $this->merchantSettings;
     }
 }
