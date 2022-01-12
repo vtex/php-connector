@@ -4,7 +4,7 @@
 
 This project implements the [VTEX Payment Provider Protocol](https://help.vtex.com/en/tutorial/payment-provider-protocol) using the PHP language.
 
-For the moment, only the payment flow for Credit Card is defined.
+For the moment, only the Credit Card payment flow is defined.
 
 The goal of the project is to verify that the [documentation](https://developers.vtex.com/vtex-developer-docs/reference/payment-flow) is providing clear information and to create code examples for the partners to use.
 
@@ -19,7 +19,7 @@ You can clone the project and serve it locally with the PHP built-in web server 
 
 and to test locally, you can use your favorite API client such as Insomnia or Postman.
 
-If you want to test it with the Test Suite, then you should set up the project in a serve so that if follows the [endpoint requirements](https://developers.vtex.com/vtex-rest-api/reference/payment-provider-protocol-api-overview#endpoint-requirements)
+If you want to test it with the Test Suite, then you should set up the project in a serve so that if follows the [endpoint requirements](https://developers.vtex.com/vtex-rest-api/reference/payment-provider-protocol-api-overview#endpoint-requirements):
 
 - Must use a standard subdomain/domain name, and not a IP address.
 - Must be served over HTTPS on port 443 with TLS 1.2 support.
