@@ -75,7 +75,7 @@ class RefundResponse
             "paymentId" => $this->paymentId,
             "refundId" => $this->refundId,
             "requestId" => $this->requestId,
-            "value" => $this->value,
+            "value" => number_format($this->value, 2, '.', ''),
         ];
 
         if (isset($this->code)) {

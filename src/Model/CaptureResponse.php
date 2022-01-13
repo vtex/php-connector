@@ -60,7 +60,7 @@ class CaptureResponse
         $formattedResponse = [
             "paymentId" => $this->paymentId,
             "settleId" => $this->settleId,
-            "value" => $this->value,
+            "value" => number_format($this->value, 2, '.', ''),
             "requestId" => $this->requestId,
         ];
 
