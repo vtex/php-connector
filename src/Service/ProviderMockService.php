@@ -38,19 +38,46 @@ class ProviderMockService implements ProviderServiceInterface
         $this->clientIsTestSuite = $clientIsTestSuite;
     }
 
+    /**
+     * If it's the TestSuite calling the connector, the authorization flow will be selected
+     * according to the specific credit card number send in the request
+     * If it's not the TestSuite, then it will check if the credit card is valid and respond accordingly
+     *
+     * @param CreatePaymentRequest $request
+     * @return CreatePaymentResponse
+     */
     public function createPayment(CreatePaymentRequest $request): CreatePaymentResponse
     {
-        if ($this->clientIsTestSuite && $request->isCreditCardPayment()) {
+        if (
+            $this->clientIsTestSuite && $request->isCreditCardPayment()
+        ) {
             $creditCardNumber = $request->card()->cardNumber();
             $flow = self::$creditCardFlow[$creditCardNumber];
+
             return $this->$flow($request);
+        } elseif (
+            !$this->clientIsTestSuite && $request->isCreditCardPayment()
+        ) {
+            $creditCardNumber = $request->card()->cardNumber();
+            $creditCardIsValid = $this->validateCreditCard($creditCardNumber);
+
+            if ($creditCardIsValid) {
+
+                return $this->authorizePayment($request);
+            } else {
+
+                return $this->denyPayment($request);
+            }
+
         } else {
             throw new \Exception("Not implemented", 501);
         }
     }
 
     /**
-     * This function mocks the usage of the countryOfOperation and delayToAutoSettle customFields
+     * Our provider allows the merchant to set up a custom delay to auto Settle after the authorization
+     * using the custom field "DelayToAutoSettle".
+     * Also, it will set a different acquirer, depending on the "Country of operation" custom field.
      *
      * @param CreatePaymentRequest $request
      * @return CreatePaymentResponse
@@ -99,6 +126,12 @@ class ProviderMockService implements ProviderServiceInterface
         );
     }
 
+    /**
+     * Our Provider will not cancel a request, unless the $request id is send on the request.
+     *
+     * @param CancellationRequest $request
+     * @return CancellationResponse
+     */
     public function processCancellation(CancellationRequest $request): CancellationResponse
     {
         $cancellationId = $this->nextCancellationId();
@@ -115,6 +148,12 @@ class ProviderMockService implements ProviderServiceInterface
         return bin2hex(random_bytes(10));
     }
 
+    /**
+     * At the moment, our provider approves all the settlement requests
+     *
+     * @param CaptureRequest $request
+     * @return CaptureResponse
+     */
     public function processCapture(CaptureRequest $request): CaptureResponse
     {
         $captureId = $this->nextCaptureId();
@@ -128,17 +167,24 @@ class ProviderMockService implements ProviderServiceInterface
     }
 
     /**
-     * This function mocks the usage of the $refundType, "Type of refund" customField
+     * Our provider accepts automatic refunds from up to 1000 money.
+     * Our customers can choose to use automatic or manual refund, setting the "Type of refund" customField
      *
      * @param RefundRequest $request
      * @return RefundResponse
      */
     public function processRefund(RefundRequest $request): RefundResponse
     {
-        if ($request->merchantSettings()->isAutomaticRefund() && $request->value() < 1000) {
+        if (
+            $request->merchantSettings()->isAutomaticRefund()
+            && $request->value() <= 1000
+        ) {
             $refundId = $this->nextRefundId();
             return RefundResponse::approved($request, $refundId);
-        } elseif ($request->merchantSettings()->isAutomaticRefund() && $request->value() > 1000) {
+        } elseif (
+            $request->merchantSettings()->isAutomaticRefund()
+            && $request->value() > 1000
+        ) {
             return RefundResponse::denied($request);
         }
 
@@ -150,5 +196,41 @@ class ProviderMockService implements ProviderServiceInterface
     private function nextRefundId(): string
     {
         return bin2hex(random_bytes(10));
+    }
+
+    /**
+     * validates credit card with Luhn algorithm
+     * https://stackoverflow.com/questions/174730/what-is-the-best-way-to-validate-a-credit-card-in-php
+     *
+     * @param [string] $creditCardNumber
+     * @return boolean
+     */
+    private function validateCreditCard(string $creditCardNumber): bool
+    {
+        // Strip any non-digits (useful for credit card numbers with spaces and hyphens)
+        $number = preg_replace('/\D/', '', $creditCardNumber);
+
+        // Set the string length and parity
+        $number_length = strlen($number);
+        $parity = $number_length % 2;
+
+        // Loop through each digit and do the maths
+        $total = 0;
+        for ($i = 0; $i < $number_length; $i++) {
+            $digit = $number[$i];
+            // Multiply alternate digits by two
+            if ($i % 2 == $parity) {
+                $digit *= 2;
+                // If the sum is two digits, add them together (in effect)
+                if ($digit > 9) {
+                    $digit -= 9;
+                }
+            }
+            // Total up the digits
+            $total += $digit;
+        }
+
+        // If the total mod 10 equals 0, the number is valid
+        return ($total % 10 == 0) ? true : false;
     }
 }
