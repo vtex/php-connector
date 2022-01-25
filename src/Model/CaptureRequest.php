@@ -42,6 +42,26 @@ class CaptureRequest
 
     public static function fromArray(array $array): self
     {
+        $recipients = [];
+
+        if (isset($array['recipients'])) {
+            $recipients = array_map(
+                function ($recipient) {
+                    return new Recipient(
+                        $recipient['id'],
+                        $recipient['name'],
+                        $recipient['documentType'],
+                        $recipient['document'],
+                        $recipient['role'],
+                        $recipient['amount'],
+                        $recipient['chargeProcessingFee'],
+                        $recipient['chargebackLiable']
+                    );
+                },
+                $array['recipients']
+            );
+        }
+
         return new self(
             $array['transactionId'],
             $array['requestId'] ?? null,
@@ -49,7 +69,7 @@ class CaptureRequest
             (float) $array['value'],
             $array['authorizationId'] ?? null, // docs says mandatory, but test doesn't send it
             $array['tid'] ?? null,
-            $array['recipients'] ?? null,
+            $recipients,
             $array['sandboxMode'] ?? false,
             isset($array['merchantSettings']) ? MerchantSettings::fromArray($array['merchantSettings']) : new MerchantSettings(),
         );
