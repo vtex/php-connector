@@ -149,7 +149,7 @@ class ProviderMockService implements ProviderServiceInterface
     }
 
     /**
-     * At the moment, our provider approves all the settlement requests
+     * Our provider will deny the settlement of requests with value higher than 1.000.000
      *
      * @param CaptureRequest $request
      * @return CaptureResponse
@@ -157,6 +157,10 @@ class ProviderMockService implements ProviderServiceInterface
     public function processCapture(CaptureRequest $request): CaptureResponse
     {
         $captureId = $this->nextCaptureId();
+
+        if ($request->value() > 1000000) {
+            return CaptureResponse::denied($request);
+        }
 
         return CaptureResponse::approved($request, $captureId);
     }
