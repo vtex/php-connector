@@ -75,8 +75,8 @@ class ProviderMockService implements ProviderServiceInterface
     }
 
     /**
-     * Our provider allows the merchant to set up a custom delay to auto Settle after the authorization
-     * using the custom field "DelayToAutoSettle".
+     * Our provider allows the merchant to set up a custom delay to auto settle the payment
+     * after the authorization using the custom field "DelayToAutoSettle".
      * Also, it will set a different acquirer, depending on the "Country of operation" custom field.
      *
      * @param CreatePaymentRequest $request
