@@ -40,6 +40,7 @@ class CreatePaymentRequest
     private $totalCartValue;
     private $callbackUrl;
     private $returnUrl;
+    private $requestArray;
 
     private $creditCardList = [
         "Visa",
@@ -57,7 +58,7 @@ class CreatePaymentRequest
     ];
 
 
-    public function __construct(
+    private function __construct(
         string $reference,
         string $orderId,
         string $shopperInteraction,
@@ -89,7 +90,8 @@ class CreatePaymentRequest
         ?bool $sandboxMode,
         ?float $totalCartValue,
         string $callbackUrl,
-        string $returnUrl
+        string $returnUrl,
+        array $requestArray
     ) {
         $this->reference = $reference;
         $this->orderId = $orderId;
@@ -123,6 +125,8 @@ class CreatePaymentRequest
         $this->totalCartValue = $totalCartValue;
         $this->callbackUrl = $callbackUrl;
         $this->returnUrl = $returnUrl;
+        $this->requestArray = $requestArray;
+
     }
 
     public static function fromArray(array $array): self
@@ -242,7 +246,8 @@ class CreatePaymentRequest
             $array['sandboxMode'] ?? false,
             isset($array['totalCartValue']) ? (float) $array['totalCartValue'] : null,
             $array['callbackUrl'],
-            $array['returnUrl']
+            $array['returnUrl'],
+            $array
         );
     }
 
@@ -269,5 +274,15 @@ class CreatePaymentRequest
     public function merchantSettings(): MerchantSettings
     {
         return $this->merchantSettings;
+    }
+
+    public function value(): float
+    {
+        return $this->value;
+    }
+
+    public function asArray(): array
+    {
+        return $this->requestArray;
     }
 }
