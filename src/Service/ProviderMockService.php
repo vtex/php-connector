@@ -48,6 +48,9 @@ class ProviderMockService implements ProviderServiceInterface
      */
     public function createPayment(CreatePaymentRequest $request): CreatePaymentResponse
     {
+
+        $this->saveAuthorizationRequest($request);
+
         if (
             $this->clientIsTestSuite && $request->isCreditCardPayment()
         ) {
@@ -236,5 +239,15 @@ class ProviderMockService implements ProviderServiceInterface
 
         // If the total mod 10 equals 0, the number is valid
         return ($total % 10 == 0) ? true : false;
+    }
+
+    private function saveAuthorizationRequest(CreatePaymentRequest $request): void
+    {
+        if (!is_dir("logs/requests")) {
+            mkdir("logs/requests", 0777, true);
+        }
+        $content = json_encode($request->asArray());
+        $filename = "logs/requests/authorization-{$request->paymentId()}.json";
+        file_put_contents($filename, $content);
     }
 }
