@@ -6,34 +6,6 @@ use PhpConnector\Model\CreatePaymentRequest;
 
 class CreatePaymentResponse
 {
-
-/*     private static $creditCardPaymentDeniedResponse = [
-        "status" => "denied",
-        "authorizationId" => null,
-        "tid" => "TID-7B58BE1A08",
-        "code" => "OperationDeniedCode",
-        "message" => "Credit card payment denied"
-    ];
-
-    private static $creditCardPaymentProcessing = [
-        "status" => "undefined",
-        "tid" => "TID-7B58BE1A08",
-    ];
-
-    private static $creditCardPaymentApprovedResponse = [
-        "status" => "approved",
-        "authorizationId" => "AUT-09DC5E8F03",
-        "tid" => "TID-7B58BE1A08",
-        "nsu" => "NSU-107521E866",
-        "acquirer" => "TestPay",
-        "code" => "OperationApprovedCode",
-        "message" => null,
-        "delayToAutoSettle" => 21600,
-        "delayToAutoSettleAfterAntifraud" => 1800,
-        "delayToCancel" => 21600,
-        "maxValue" => 1000,
-    ]; */
-
     private $paymentId;
     private $status;
     private $authorizationId;
