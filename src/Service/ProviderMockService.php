@@ -51,29 +51,31 @@ class ProviderMockService implements ProviderServiceInterface
 
         $this->saveAuthorizationRequest($request);
 
+        if (!$request->isCreditCardPayment()) {
+            throw new \Exception("Not implemented", 501);
+        }
+
+        $creditCardNumber = $request->card()->cardNumber();
+        $creditCardIsValid = $this->validateCreditCard($creditCardNumber);
+        $isAmericanExpress = $request->paymentMethod() === 'American Express';
+
+        if ($isAmericanExpress && $creditCardIsValid) {
+            return $this->asyncApprove($request, true);
+        } elseif ($isAmericanExpress && !$creditCardIsValid) {
+            return $this->asyncDeny($request, true);
+        }
+
         if (
-            $this->clientIsTestSuite && $request->isCreditCardPayment()
+            $this->clientIsTestSuite
         ) {
             $creditCardNumber = $request->card()->cardNumber();
             $flow = self::$creditCardFlow[$creditCardNumber];
 
             return $this->$flow($request);
-        } elseif (
-            !$this->clientIsTestSuite && $request->isCreditCardPayment()
-        ) {
-            $creditCardNumber = $request->card()->cardNumber();
-            $creditCardIsValid = $this->validateCreditCard($creditCardNumber);
-
-            if ($creditCardIsValid) {
-
-                return $this->authorizePayment($request);
-            } else {
-
-                return $this->denyPayment($request);
-            }
-
+        } elseif ($creditCardIsValid) {
+            return $this->authorizePayment($request);
         } else {
-            throw new \Exception("Not implemented", 501);
+            return $this->denyPayment($request);
         }
     }
 
@@ -111,20 +113,22 @@ class ProviderMockService implements ProviderServiceInterface
         );
     }
 
-    private function asyncDeny(CreatePaymentRequest $request): CreatePaymentResponse
+    private function asyncDeny(CreatePaymentRequest $request, bool $redirect): CreatePaymentResponse
     {
         return CreatePaymentResponse::pending(
             $request,
             bin2hex(random_bytes(10)),
+            $redirect,
             $this->denyPayment($request),
         );
     }
 
-    private function asyncApprove(CreatePaymentRequest $request): CreatePaymentResponse
+    private function asyncApprove(CreatePaymentRequest $request, bool $redirect): CreatePaymentResponse
     {
         return CreatePaymentResponse::pending(
             $request,
             bin2hex(random_bytes(10)),
+            $redirect,
             $this->authorizePayment($request),
         );
     }
@@ -246,7 +250,7 @@ class ProviderMockService implements ProviderServiceInterface
         if (!is_dir("logs/requests")) {
             mkdir("logs/requests", 0777, true);
         }
-        $content = json_encode($request->asArray());
+        $content = json_encode($request->asArray(), JSON_UNESCAPED_SLASHES);
         $filename = "logs/requests/authorization-{$request->paymentId()}.json";
         file_put_contents($filename, $content);
     }

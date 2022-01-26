@@ -19,6 +19,7 @@ class CreatePaymentResponse
     private $delayToCancel;
     private $maxValue;
     private $retryResponse;
+    private $paymentUrl;
 
     public function __construct(
         ?string $paymentId,
@@ -33,6 +34,7 @@ class CreatePaymentResponse
         ?int $delayToAutoSettleAfterAntiFraud,
         ?int $delayToCancel,
         ?float $maxValue,
+        ?string $paymentUrl,
         ?self $retryResponse
     ) {
         $this->paymentId = $paymentId;
@@ -47,6 +49,7 @@ class CreatePaymentResponse
         $this->delayToAutoSettleAfterAntiFraud = $delayToAutoSettleAfterAntiFraud;
         $this->delayToCancel = $delayToCancel;
         $this->maxValue = $maxValue;
+        $this->paymentUrl = $paymentUrl;
         $this->retryResponse = $retryResponse;
     }
 
@@ -73,6 +76,7 @@ class CreatePaymentResponse
             21600,
             1000,
             null,
+            null,
         );
     }
 
@@ -91,12 +95,19 @@ class CreatePaymentResponse
             null,
             null,
             null,
+            null,
             null
         );
     }
 
-    public static function pending(CreatePaymentRequest $request, $tid, $retryResponse): self
+    public static function pending(CreatePaymentRequest $request, $tid, bool $redirect, $retryResponse): self
     {
+        $paymentURL = null;
+
+        if ($redirect) {
+            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? 'https' : 'http';
+            $paymentURL = "{$protocol}://{$_SERVER['SERVER_NAME']}/installments.php?paymentId={$request->paymentId()}";
+        }
         return new self(
             $request->paymentId(),
             "undefined",
@@ -110,6 +121,7 @@ class CreatePaymentResponse
             null,
             null,
             null,
+            $paymentURL,
             $retryResponse
         );
     }
@@ -140,6 +152,13 @@ class CreatePaymentResponse
                 "tid" => $this->tid,
                 "code" => $this->code,
                 "message" => $this->message,
+            ];
+        } elseif (isset($this->paymentUrl)) {
+            $formattedResponse = [
+                "paymentId" => $this->paymentId,
+                "status" => $this->status,
+                "tid" => $this->tid,
+                "paymentUrl" => $this->paymentUrl,
             ];
         } else {
             $formattedResponse = [

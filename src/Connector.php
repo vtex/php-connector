@@ -163,7 +163,7 @@ class Connector
         http_response_code($responseCode);
         header("Content-Type: application/json");
         header("Accept: application/json");
-        echo json_encode($arrayData);
+        echo json_encode($arrayData, JSON_UNESCAPED_SLASHES);
     }
 
     private function retry(CreatePaymentRequest $request, $response)
@@ -172,7 +172,7 @@ class Connector
 
         $curl = curl_init();
 
-        $payload = json_encode($response);
+        $payload = json_encode($response, JSON_UNESCAPED_SLASHES);
         curl_setopt_array($curl, [
             CURLOPT_URL => $request->callbackUrl(),
             CURLOPT_RETURNTRANSFER => true,

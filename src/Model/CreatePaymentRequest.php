@@ -266,6 +266,11 @@ class CreatePaymentRequest
         return $this->callbackUrl;
     }
 
+    public function paymentMethod(): string
+    {
+        return $this->paymentMethod;
+    }
+
     public function isCreditCardPayment(): bool
     {
         return in_array($this->paymentMethod, $this->creditCardList);
