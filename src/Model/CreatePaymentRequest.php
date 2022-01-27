@@ -75,7 +75,7 @@ class CreatePaymentRequest
         ?float $installmentsValue,
         string $deviceFingerprint,
         ?string $ipAddress, // docs says mandatory, but not sent on test
-        Card $card,
+        ?Card $card,
         ?float $shippingValue,
         ?float $taxValue,
         Buyer $buyer,
@@ -131,14 +131,18 @@ class CreatePaymentRequest
 
     public static function fromArray(array $array): self
     {
-        $card = new Card(
-            $array['card']['holder'],
-            $array['card']['number'],
-            $array['card']['csc'],
-            $array['card']['expiration']['month'],
-            $array['card']['expiration']['year'],
-            $array['card']['document']
-        );
+        $card = null;
+        if (isset($array['card']['number'])) {
+            $card = new Card(
+                $array['card']['holder'],
+                $array['card']['number'],
+                $array['card']['csc'],
+                $array['card']['expiration']['month'],
+                $array['card']['expiration']['year'],
+                $array['card']['document']
+            );
+        }
+
 
         // docs says 'minicart' not in camel case, but example shows like this
         $shippingAddress = new Address(
@@ -256,7 +260,7 @@ class CreatePaymentRequest
         return $this->paymentId;
     }
 
-    public function card(): Card
+    public function card(): ?Card
     {
         return $this->card;
     }
