@@ -41,7 +41,10 @@ class ProviderMockService implements ProviderServiceInterface
     /**
      * If it's the TestSuite calling the connector, the authorization flow will be selected
      * according to the specific credit card number send in the request
+     *
      * If it's not the TestSuite, then it will check if the credit card is valid and respond accordingly
+     *
+     * "myRedirectPaymentMethod" payment method will follow the redirect flow
      *
      * @param CreatePaymentRequest $request
      * @return CreatePaymentResponse
@@ -51,19 +54,17 @@ class ProviderMockService implements ProviderServiceInterface
 
         $this->saveAuthorizationRequest($request);
 
-        if (!$request->isCreditCardPayment()) {
+        $isRedirectMethod = $request->paymentMethod() === 'myRedirectPaymentMethod';
+        if ($isRedirectMethod) {
+            return $this->approveAndRedirect($request);
+        }
+
+        if (!$isRedirectMethod && !$request->isCreditCardPayment()) {
             throw new \Exception("Not implemented", 501);
         }
 
         $creditCardNumber = $request->card()->cardNumber();
         $creditCardIsValid = $this->validateCreditCard($creditCardNumber);
-        $isAmericanExpress = $request->paymentMethod() === 'American Express';
-
-        if ($isAmericanExpress && $creditCardIsValid) {
-            return $this->asyncApprove($request, true);
-        } elseif ($isAmericanExpress && !$creditCardIsValid) {
-            return $this->asyncDeny($request, true);
-        }
 
         if (
             $this->clientIsTestSuite
@@ -113,7 +114,7 @@ class ProviderMockService implements ProviderServiceInterface
         );
     }
 
-    private function asyncDeny(CreatePaymentRequest $request, bool $redirect): CreatePaymentResponse
+    private function asyncDeny(CreatePaymentRequest $request, bool $redirect = false): CreatePaymentResponse
     {
         return CreatePaymentResponse::pending(
             $request,
@@ -123,12 +124,22 @@ class ProviderMockService implements ProviderServiceInterface
         );
     }
 
-    private function asyncApprove(CreatePaymentRequest $request, bool $redirect): CreatePaymentResponse
+    private function asyncApprove(CreatePaymentRequest $request, bool $redirect = false): CreatePaymentResponse
     {
         return CreatePaymentResponse::pending(
             $request,
             bin2hex(random_bytes(10)),
             $redirect,
+            $this->authorizePayment($request),
+        );
+    }
+
+    private function approveAndRedirect(CreatePaymentRequest $request): CreatePaymentResponse
+    {
+        return CreatePaymentResponse::pending(
+            $request,
+            bin2hex(random_bytes(10)),
+            true,
             $this->authorizePayment($request),
         );
     }

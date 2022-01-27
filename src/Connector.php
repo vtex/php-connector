@@ -26,6 +26,7 @@ class Connector
                 "Visa",
                 "Mastercard",
                 "American Express",
+                "myRedirectPaymentMethod"
             ]
         ];
         $this->returnWithDefaultHeaders(200, $paymentMethods);
@@ -50,6 +51,10 @@ class Connector
                     "name" => "American Express",
                     "allowsSplit" => "disabled"
                 ],
+                [
+                    "name" => "myRedirectPaymentMethod",
+                    "allowsSplit" => "disabled"
+                ]
             ],
             "customFields" => [
                 [
