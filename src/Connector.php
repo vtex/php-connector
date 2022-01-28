@@ -173,7 +173,7 @@ class Connector
 
     private function retry(CreatePaymentRequest $request, $response)
     {
-        sleep(1);
+        sleep(61);
 
         $curl = curl_init();
 
