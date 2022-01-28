@@ -19,5 +19,5 @@ interface ProviderServiceInterface
 
     public function processRefund(RefundRequest $request): RefundResponse;
 
-    public function createPayment(CreatePaymentRequest $request): AuthorizationResponse;
+    public function authorizePayment(CreatePaymentRequest $request): AuthorizationResponse;
 }

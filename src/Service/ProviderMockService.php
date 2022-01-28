@@ -33,7 +33,7 @@ class ProviderMockService implements ProviderServiceInterface
 
     private $clientIsTestSuite;
 
-    public function __construct(bool $clientIsTestSuite)
+    public function __construct(bool $clientIsTestSuite = false)
     {
         $this->clientIsTestSuite = $clientIsTestSuite;
     }
@@ -49,7 +49,7 @@ class ProviderMockService implements ProviderServiceInterface
      * @param CreatePaymentRequest $request
      * @return AuthorizationResponse
      */
-    public function createPayment(CreatePaymentRequest $request): AuthorizationResponse
+    public function authorizePayment(CreatePaymentRequest $request): AuthorizationResponse
     {
 
         $this->saveAuthorizationRequest($request);
@@ -78,6 +78,13 @@ class ProviderMockService implements ProviderServiceInterface
         } else {
             return $this->denyPayment($request);
         }
+    }
+
+    public function authorizePaymentById(string $paymentId): AuthorizationResponse
+    {
+        $request = $this->getPersistedRequest($paymentId);
+
+        return $this->authorizePayment($request);
     }
 
     /**
@@ -281,5 +288,14 @@ class ProviderMockService implements ProviderServiceInterface
         $content = json_encode($request->asArray(), JSON_UNESCAPED_SLASHES);
         $filename = "logs/requests/authorization-{$request->paymentId()}.json";
         file_put_contents($filename, $content);
+    }
+
+    private function getPersistedRequest(string $paymentId): CreatePaymentRequest
+    {
+        $filename = "logs/requests/authorization-{$paymentId}.json";
+        $content = file_get_contents($filename);
+        $requestAsArray = json_decode($content, true);
+
+        return CreatePaymentRequest::fromArray($requestAsArray);
     }
 }

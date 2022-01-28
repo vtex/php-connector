@@ -270,6 +270,11 @@ class CreatePaymentRequest
         return $this->callbackUrl;
     }
 
+    public function returnUrl(): string
+    {
+        return $this->returnUrl;
+    }
+
     public function paymentMethod(): string
     {
         return $this->paymentMethod;

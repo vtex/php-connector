@@ -114,7 +114,7 @@ class Connector
             throw new \Exception('Invalid Request Body', 400);
         }
 
-        $paymentResponse = $this->providerService->createPayment($request);
+        $paymentResponse = $this->providerService->authorizePayment($request);
 
         $this->returnWithDefaultHeaders($paymentResponse->responseCode(), $paymentResponse->asArray());
 
@@ -173,8 +173,6 @@ class Connector
 
     private function retry(CreatePaymentRequest $request, $response)
     {
-        sleep(61);
-
         $curl = curl_init();
 
         $payload = json_encode($response, JSON_UNESCAPED_SLASHES);
