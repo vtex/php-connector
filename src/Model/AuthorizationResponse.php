@@ -135,7 +135,7 @@ class AuthorizationResponse
             $paymentId,
             null,
             null,
-            "Approved",
+            "Payment with custom installments approved",
             null,
             "myRedirectPaymentMethod",
             $authorizationId,
