@@ -153,25 +153,18 @@ class ProviderMockService implements ProviderServiceInterface
 
         $tid = bin2hex(random_bytes(10));
 
-        // $approvedResponse = AuthorizationResponse::approvedRedirect(
-        //     $request->paymentId(),
-        //     bin2hex(random_bytes(10)),
-        //     $tid,
-        //     $delayToAutoSettle
-        // );
-
-        return AuthorizationResponse::approvedRedirect(
+        $approvedResponse = AuthorizationResponse::approvedRedirect(
             $request->paymentId(),
             bin2hex(random_bytes(10)),
             $tid,
             $delayToAutoSettle
         );
 
-        // return AuthorizationResponse::redirect(
-        //     $request->paymentId(),
-        //     $tid,
-        //     $approvedResponse
-        // );
+        return AuthorizationResponse::redirect(
+            $request->paymentId(),
+            $tid,
+            $approvedResponse
+        );
     }
 
     /**
