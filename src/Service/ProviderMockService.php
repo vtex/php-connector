@@ -3,7 +3,7 @@
 namespace PhpConnector\Service;
 
 use PhpConnector\Model\CreatePaymentRequest;
-use PhpConnector\Model\CreatePaymentResponse;
+use PhpConnector\Model\AuthorizationResponse;
 use PhpConnector\Model\CancellationRequest;
 use PhpConnector\Model\CancellationResponse;
 use PhpConnector\Model\CaptureRequest;
@@ -14,7 +14,7 @@ use PhpConnector\Model\RefundResponse;
 class ProviderMockService implements ProviderServiceInterface
 {
     private static $creditCardFlow = [
-        '4444333322221111' => 'authorizePayment',
+        '4444333322221111' => 'approveCreditCardPayment',
         '4444333322221112' => 'denyPayment',
         '4222222222222224' => 'asyncApprove',
         '4222222222222225' => 'asyncDeny',
@@ -47,9 +47,9 @@ class ProviderMockService implements ProviderServiceInterface
      * "myRedirectPaymentMethod" payment method will follow the redirect flow
      *
      * @param CreatePaymentRequest $request
-     * @return CreatePaymentResponse
+     * @return AuthorizationResponse
      */
-    public function createPayment(CreatePaymentRequest $request): CreatePaymentResponse
+    public function createPayment(CreatePaymentRequest $request): AuthorizationResponse
     {
 
         $this->saveAuthorizationRequest($request);
@@ -74,7 +74,7 @@ class ProviderMockService implements ProviderServiceInterface
 
             return $this->$flow($request);
         } elseif ($creditCardIsValid) {
-            return $this->authorizePayment($request);
+            return $this->approveCreditCardPayment($request);
         } else {
             return $this->denyPayment($request);
         }
@@ -86,9 +86,9 @@ class ProviderMockService implements ProviderServiceInterface
      * Also, it will set a different acquirer, depending on the "Country of operation" custom field.
      *
      * @param CreatePaymentRequest $request
-     * @return CreatePaymentResponse
+     * @return AuthorizationResponse
      */
-    private function authorizePayment(CreatePaymentRequest $request): CreatePaymentResponse
+    private function approveCreditCardPayment(CreatePaymentRequest $request, string $tid = null): AuthorizationResponse
     {
         $countryOfOperationAsString = $request->merchantSettings()->countryOfOperationAsString();
 
@@ -96,56 +96,72 @@ class ProviderMockService implements ProviderServiceInterface
 
         $delayToAutoSettle = $request->merchantSettings()->delayToAutoSettle() ?? self::$delayToAutoSettleDefault;
 
-        return CreatePaymentResponse::approved(
-            $request,
+        $tid = $tid ?? bin2hex(random_bytes(10));
+
+        return AuthorizationResponse::approved(
+            $request->paymentId(),
             bin2hex(random_bytes(10)),
-            bin2hex(random_bytes(10)),
+            $tid,
             bin2hex(random_bytes(10)),
             $acquirer,
             $delayToAutoSettle
         );
     }
 
-    private function denyPayment(CreatePaymentRequest $request): CreatePaymentResponse
+    private function denyPayment(CreatePaymentRequest $request, string $tid = null): AuthorizationResponse
     {
-        return CreatePaymentResponse::denied(
-            $request,
-            bin2hex(random_bytes(10))
+        $tid = $tid ?? bin2hex(random_bytes(10));
+
+        return AuthorizationResponse::denied(
+            $request->paymentId(),
+            $$tid
         );
     }
 
-    private function asyncDeny(CreatePaymentRequest $request, bool $redirect = false): CreatePaymentResponse
+    private function asyncDeny(CreatePaymentRequest $request): AuthorizationResponse
     {
-        return CreatePaymentResponse::pending(
+        $tid = bin2hex(random_bytes(10));
+
+        return AuthorizationResponse::pending(
             $request,
-            bin2hex(random_bytes(10)),
-            $redirect,
-            $this->denyPayment($request),
+            $tid,
+            $this->denyPayment($request, $tid),
         );
     }
 
-    private function asyncApprove(CreatePaymentRequest $request, bool $redirect = false): CreatePaymentResponse
+    private function asyncApprove(CreatePaymentRequest $request): AuthorizationResponse
     {
-        return CreatePaymentResponse::pending(
+        $tid = bin2hex(random_bytes(10));
+
+        return AuthorizationResponse::pending(
             $request,
             bin2hex(random_bytes(10)),
-            $redirect,
-            $this->authorizePayment($request),
+            $this->approveCreditCardPayment($request, $tid),
         );
     }
 
-    private function approveAndRedirect(CreatePaymentRequest $request): CreatePaymentResponse
+    private function approveAndRedirect(CreatePaymentRequest $request): AuthorizationResponse
     {
-        return CreatePaymentResponse::pending(
-            $request,
+        $delayToAutoSettle = $request->merchantSettings()->delayToAutoSettle() ?? self::$delayToAutoSettleDefault;
+
+        $tid = bin2hex(random_bytes(10));
+
+        $approvedResponse = AuthorizationResponse::approvedRedirect(
+            $request->paymentId(),
             bin2hex(random_bytes(10)),
-            true,
-            $this->authorizePayment($request),
+            $tid,
+            $delayToAutoSettle
+        );
+
+        return AuthorizationResponse::redirect(
+            $request->paymentId(),
+            $tid,
+            $approvedResponse
         );
     }
 
     /**
-     * Our Provider will not cancel a request, unless the $request id is send on the request.
+     * Our Provider only cancels request when the $requestId is defined on the request body.
      *
      * @param CancellationRequest $request
      * @return CancellationResponse
@@ -155,10 +171,11 @@ class ProviderMockService implements ProviderServiceInterface
         $cancellationId = $this->nextCancellationId();
 
         if (!is_null($request->requestId())) {
-            return CancellationResponse::notSupported($request);
+            return CancellationResponse::approved($request, $cancellationId);
+
         }
 
-        return CancellationResponse::approved($request, $cancellationId);
+        return CancellationResponse::notSupported($request);
     }
 
     private function nextCancellationId(): string

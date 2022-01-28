@@ -2,9 +2,8 @@
 
 namespace PhpConnector\Model;
 
-use PhpConnector\Model\CreatePaymentRequest;
 
-class CreatePaymentResponse
+class AuthorizationResponse
 {
     private $paymentId;
     private $status;
@@ -20,22 +19,24 @@ class CreatePaymentResponse
     private $maxValue;
     private $retryResponse;
     private $paymentUrl;
+    private $paymentMethod;
 
     public function __construct(
-        ?string $paymentId,
         string $status,
-        ?string $authorizationId,
         string $tid,
-        ?string $nsu,
-        ?string $acquirer,
-        ?string $code,
-        ?string $message,
-        ?int $delayToAutoSettle,
-        ?int $delayToAutoSettleAfterAntiFraud,
-        ?int $delayToCancel,
-        ?float $maxValue,
-        ?string $paymentUrl,
-        ?self $retryResponse
+        ?string $paymentId,
+        ?self $retryResponse = null,
+        ?string $code = null,
+        ?string $message = null,
+        ?string $paymentUrl = null,
+        ?string $paymentMethod = "creditCard",
+        ?string $authorizationId = null,
+        ?string $nsu = null,
+        ?string $acquirer = null,
+        ?int $delayToAutoSettle = null,
+        ?int $delayToAutoSettleAfterAntiFraud = null,
+        ?int $delayToCancel = null,
+        ?float $maxValue = null
     ) {
         $this->paymentId = $paymentId;
         $this->status = $status;
@@ -50,87 +51,106 @@ class CreatePaymentResponse
         $this->delayToCancel = $delayToCancel;
         $this->maxValue = $maxValue;
         $this->paymentUrl = $paymentUrl;
+        $this->paymentMethod = $paymentMethod;
         $this->retryResponse = $retryResponse;
     }
 
     public static function approved(
-        CreatePaymentRequest $request,
-        $authorizationId,
-        $tid,
-        $nsu,
-        $acquirer,
-        $delayToAutoSettle
+        string $paymentId,
+        string $authorizationId,
+        string $tid,
+        string $nsu,
+        string $acquirer,
+        int $delayToAutoSettle
     ): self
     {
         return new self(
-            $request->paymentId(),
             "approved",
-            $authorizationId,
             $tid,
-            $nsu,
-            $acquirer,
-            "OperationDeniedCode",
-            "Credit card payment denied",
-            $delayToAutoSettle,
-            1800,
-            21600,
-            1000,
-            null,
-            null,
-        );
-    }
-
-    public static function denied(CreatePaymentRequest $request, $tid): self
-    {
-        return new self(
-            $request->paymentId(),
-            "denied",
-            null,
-            $tid,
-            null,
+            $paymentId,
             null,
             "OperationApprovedCode",
             "Approved",
             null,
+            "creditCard",
+            $authorizationId,
+            $nsu,
+            $acquirer,
+            $delayToAutoSettle,
+            1800,
+            21600,
             null,
-            null,
-            null,
-            null,
-            null
         );
     }
 
-    public static function pending(CreatePaymentRequest $request, $tid, bool $redirect, $retryResponse): self
+    public static function denied(string $paymentId, string $tid): self
     {
-        $paymentURL = null;
-
-        if ($redirect) {
-            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? 'https' : 'http';
-            $paymentURL = "{$protocol}://{$_SERVER['SERVER_NAME']}/installments.php?paymentId={$request->paymentId()}";
-        }
         return new self(
-            $request->paymentId(),
-            "undefined",
-            null,
+            "denied",
             $tid,
+            $paymentId,
             null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            $paymentURL,
+            "OperationDeniedCode ",
+            "Credit card payment denied",
+        );
+    }
+
+    public static function pending($paymentId, $tid, $retryResponse): self
+    {
+        return new self(
+            "undefined",
+            $tid,
+            $paymentId,
             $retryResponse
         );
     }
 
+    public static function redirect(string $paymentId, string $tid, self $retryResponse): self
+    {
 
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? 'https' : 'http';
+        $paymentURL = "{$protocol}://{$_SERVER['SERVER_NAME']}/installments.php?paymentId={$paymentId}";
+
+        return new self(
+            "undefined",
+            $tid,
+            $paymentId,
+            $retryResponse,
+            null,
+            null,
+            $paymentURL,
+            "myRedirectPaymentMethod"
+        );
+    }
+
+    public static function approvedRedirect(
+        string $paymentId,
+        string $authorizationId,
+        string $tid,
+        int $delayToAutoSettle
+    ): self {
+        return new self(
+            "approved",
+            $tid,
+            $paymentId,
+            null,
+            null,
+            "Approved",
+            null,
+            "myRedirectPaymentMethod",
+            $authorizationId,
+            null,
+            null,
+            $delayToAutoSettle,
+            1800,
+            21600,
+            null,
+        );
+    }
 
     public function asArray(): array
     {
-        if ($this->status === 'approved') {
+        if ($this->paymentMethod === "creditCard" && $this->status === "approved") {
             $formattedResponse = [
                 "paymentId" => $this->paymentId,
                 "status" => $this->status,
@@ -145,7 +165,7 @@ class CreatePaymentResponse
                 "delayToCancel" => $this->delayToCancel,
                 "maxValue" => $this->maxValue,
             ];
-        } elseif ($this->status === 'denied') {
+        } elseif ($this->paymentMethod === "creditCard" && $this->status === 'denied') {
             $formattedResponse = [
                 "paymentId" => $this->paymentId,
                 "status" => $this->status,
@@ -153,18 +173,30 @@ class CreatePaymentResponse
                 "code" => $this->code,
                 "message" => $this->message,
             ];
-        } elseif (isset($this->paymentUrl)) {
+        } elseif ($this->paymentMethod === "creditCard" && $this->status === "undefined") {
+            $formattedResponse = [
+                "paymentId" => $this->paymentId,
+                "status" => $this->status,
+                "tid" => $this->tid,
+            ];
+        } elseif ($this->paymentMethod === "myRedirectPaymentMethod" && $this->status === "approved") {
+            $formattedResponse = [
+                "paymentId" => $this->paymentId,
+                "status" => $this->status,
+                "authorizationId" => $this->authorizationId,
+                "tid" => $this->tid,
+                "code" => $this->code,
+                "message" => $this->message,
+                "delayToAutoSettle" => $this->delayToAutoSettle,
+                "delayToAutoSettleAfterAntifraud" => $this->delayToAutoSettleAfterAntiFraud,
+                "delayToCancel" => $this->delayToCancel,
+            ];
+        } elseif ($this->paymentMethod === "myRedirectPaymentMethod" && $this->status === "undefined") {
             $formattedResponse = [
                 "paymentId" => $this->paymentId,
                 "status" => $this->status,
                 "tid" => $this->tid,
                 "paymentUrl" => $this->paymentUrl,
-            ];
-        } else {
-            $formattedResponse = [
-                "paymentId" => $this->paymentId,
-                "status" => $this->status,
-                "tid" => $this->tid,
             ];
         }
 
