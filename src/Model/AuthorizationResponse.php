@@ -185,6 +185,7 @@ class AuthorizationResponse
                 "status" => $this->status,
                 "authorizationId" => $this->authorizationId,
                 "tid" => $this->tid,
+                "nsu" => $this->tid,
                 "code" => $this->code,
                 "message" => $this->message,
                 "delayToAutoSettle" => $this->delayToAutoSettle,
