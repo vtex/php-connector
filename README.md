@@ -4,7 +4,7 @@
 
 This project implements the [VTEX Payment Provider Protocol](https://help.vtex.com/en/tutorial/payment-provider-protocol) using the PHP language.
 
-For the moment, only the Credit Card payment flow is defined.
+For the moment, the Credit Card payment flow and a redirect flow are defined.
 
 The goal of the project is to verify that the [documentation](https://developers.vtex.com/vtex-developer-docs/reference/payment-flow) is providing clear information and to create code examples for the partners to use.
 
@@ -36,18 +36,10 @@ Here is a snippet of the response for the endpoints defined:
 ```json
 {
 	"paymentMethods": [
-		{
-			"name": "Visa",
-			"allowsSplit": "onAuthorize"
-		},
-		{
-			"name": "Mastercard",
-			"allowsSplit": "onCapture"
-		},
-		{
-			"name": "American Express",
-			"allowsSplit": "disabled"
-		}
+		"Visa",
+		"Mastercard",
+		"American Express",
+		"myRedirectPaymentMethod"
 	]
 }
 ```
@@ -166,5 +158,28 @@ Here is a snippet of the response for the endpoints defined:
 	"requestId": "LA4E20D3B4E07B7E871F5B5BC9F91",
 	"value": 101,
 	"message": "Successfully refunded"
+}
+```
+## Redirect Flow
+
+The Redirect purchase flow is used when customers confirm the payment option in the store and are then redirected to a different page to fill in payment information and complete the purchase.
+
+In our example, we set up a simple form in which the customer can select a custom number of installments for the payment. The installments options are dynamic, based on the payment amount.
+
+To implement this flow, we created a new payment method called "myRedirectPaymentMethod". The initial authorization response for this method sends the status "undefined" along with a paymentUrl.
+
+This paymentUrl should reference the payment somehow, here we went simply with setting the query string "paymentId= {{paymentId}}".
+
+The gateway will call this paymentUrl, and after the interaction is finished in this page, we should redirect the customer to the returnUrl, back to the checkout.
+
+The gateway also expects to receive the final authorization response on the callbackUrl.
+
+### Create payment response for redirect method
+```json
+{
+	"paymentId": "5291d5e5-5d0d-4f5c-9677-034138956a08",
+	"status": "undefined",
+	"tid": "8c8a742d691b571fe639",
+	"paymentUrl": "http://php-connector.herokuapp.com/installments.php?paymentId=5291d5e5-5d0d-4f5c-9677-034138956a08"
 }
 ```
