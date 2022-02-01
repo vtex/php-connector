@@ -166,13 +166,13 @@ The Redirect purchase flow is used when customers confirm the payment option in 
 
 In our example, we set up a simple form in which the customer can select a custom number of installments for the payment. The installments options are dynamic, based on the payment amount.
 
-To implement this flow, we created a new payment method called "myRedirectPaymentMethod". The initial authorization response for this method sends the status "undefined" along with a paymentUrl.
+To implement this flow, we created a new payment method called "myRedirectPaymentMethod". The initial authorization response for this method sends the status "undefined" along with a `paymentUrl`.
 
-This paymentUrl should reference the payment somehow, here we went simply with setting the query string "paymentId= {{paymentId}}".
+This paymentUrl should reference the payment somehow, here we went simply with setting the query string `paymentId= {{paymentId}}`.
 
-The gateway will call this paymentUrl, and after the interaction is finished in this page, we should redirect the customer to the returnUrl, back to the checkout.
+The gateway will call this paymentUrl, and after the interaction is finished in this page, we should redirect the customer to the `returnUrl`, back to the checkout.
 
-The gateway also expects to receive the final authorization response on the callbackUrl.
+The gateway also expects to receive the final authorization response on the `callbackUrl`.
 
 ### Create payment response for redirect method
 ```json
