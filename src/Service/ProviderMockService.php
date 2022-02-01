@@ -147,6 +147,15 @@ class ProviderMockService implements ProviderServiceInterface
         );
     }
 
+    /**
+     * All payments from myRedirectPaymentMethod will be approved. The Authorization Response for
+     * this payment method will set a paymentURL, which will redirect the user to a custom flow.
+     * Our custom flow allows the shopper to select the number of installments for the payment.
+     * The installments options are dynamic, based on the payment amount.
+     *
+     * @param CreatePaymentRequest $request
+     * @return AuthorizationResponse
+     */
     private function approveAndRedirect(CreatePaymentRequest $request): AuthorizationResponse
     {
         $delayToAutoSettle = $request->merchantSettings()->delayToAutoSettle() ?? self::$delayToAutoSettleDefault;

@@ -4,6 +4,11 @@ namespace PhpConnector\Service;
 
 use PhpConnector\Model\CreatePaymentRequest;
 
+/**
+ * Custom Installments Service will render the view for selecting the installments for a given
+ * payment, and will also persist the selected option.
+ * The number of installments available for selection is dynamic, based on the payment value.
+ */
 class CustomInstallmentsService
 {
     private $paymentId;
