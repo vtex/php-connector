@@ -21,10 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $customInstallmentsService = new CustomInstallmentsService($paymentId);
     $customInstallmentsService->saveInstallmentsSelection($selectedInstallments);
 
-    // $providerService = new ProviderMockService();
-
-    // $providerService->authorizePaymentById($paymentId);
-
     $redirectUrl = $customInstallmentsService->getReturnUrl();
     header("Location: {$redirectUrl}");
     exit();

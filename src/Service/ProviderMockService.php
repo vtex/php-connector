@@ -80,13 +80,6 @@ class ProviderMockService implements ProviderServiceInterface
         }
     }
 
-    public function authorizePaymentById(string $paymentId): AuthorizationResponse
-    {
-        $request = $this->getPersistedRequest($paymentId);
-
-        return $this->authorizePayment($request);
-    }
-
     /**
      * Our provider allows the merchant to set up a custom delay to auto settle the payment
      * after the authorization using the custom field "DelayToAutoSettle".
@@ -299,12 +292,4 @@ class ProviderMockService implements ProviderServiceInterface
         file_put_contents($filename, $content);
     }
 
-    private function getPersistedRequest(string $paymentId): CreatePaymentRequest
-    {
-        $filename = "logs/requests/authorization-{$paymentId}.json";
-        $content = file_get_contents($filename);
-        $requestAsArray = json_decode($content, true);
-
-        return CreatePaymentRequest::fromArray($requestAsArray);
-    }
 }
