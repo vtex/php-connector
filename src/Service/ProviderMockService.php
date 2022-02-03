@@ -111,7 +111,7 @@ class ProviderMockService implements ProviderServiceInterface
 
         return AuthorizationResponse::denied(
             $request->paymentId(),
-            $$tid
+            $tid
         );
     }
 
