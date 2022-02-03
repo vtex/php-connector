@@ -107,7 +107,9 @@ class ProviderMockService implements ProviderServiceInterface
 
     private function denyPayment(CreatePaymentRequest $request, string $tid = null): AuthorizationResponse
     {
-        $tid = $tid ?? bin2hex(random_bytes(10));
+        if (is_null($tid)) {
+            $tid = bin2hex(random_bytes(10));
+        }
 
         return AuthorizationResponse::denied(
             $request->paymentId(),
