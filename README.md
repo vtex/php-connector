@@ -63,10 +63,6 @@ Here is a snippet of the response for the endpoints defined:
 	],
 	"customFields": [
 		{
-			"name": "DelayToAutoSettle - in seconds",
-			"type": "text"
-		},
-		{
 			"name": "Country of operation",
 			"type": "select",
 			"options": [

@@ -13,7 +13,7 @@ class Address
     private $number;
     private $complement;
     private $neighborhood;
-    private $postalCode; // not camel case in docs for shippingAddress
+    private $postalCode;
     private $city;
     private $state;
 
@@ -21,7 +21,7 @@ class Address
         string $country,
         string $street,
         string $number,
-        string $complement,
+        ?string $complement,
         string $neighborhood,
         string $postalCode,
         string $city,

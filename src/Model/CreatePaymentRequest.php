@@ -70,11 +70,11 @@ class CreatePaymentRequest
         string $merchantName,
         float $value,
         string $currency,
-        int $installments, // documentation says float, but could there be 2.5 installments?
+        int $installments,
         ?float $installmentsInterestRate,
         ?float $installmentsValue,
         string $deviceFingerprint,
-        ?string $ipAddress, // docs says mandatory, but not sent on test
+        ?string $ipAddress,
         ?Card $card,
         ?float $shippingValue,
         ?float $taxValue,

@@ -81,9 +81,8 @@ class ProviderMockService implements ProviderServiceInterface
     }
 
     /**
-     * Our provider allows the merchant to set up a custom delay to auto settle the payment
-     * after the authorization using the custom field "DelayToAutoSettle".
-     * Also, it will set a different acquirer, depending on the "Country of operation" custom field.
+     * Our provider allows the merchant to select the "Country of operation" custom field.
+     * Depending on that, it will set a different acquirer.
      *
      * @param CreatePaymentRequest $request
      * @return AuthorizationResponse
@@ -94,8 +93,6 @@ class ProviderMockService implements ProviderServiceInterface
 
         $acquirer = self::$acquirerByCountry[$countryOfOperationAsString];
 
-        $delayToAutoSettle = $request->merchantSettings()->delayToAutoSettle() ?? self::$delayToAutoSettleDefault;
-
         $tid = $tid ?? bin2hex(random_bytes(10));
 
         return AuthorizationResponse::approved(
@@ -104,7 +101,7 @@ class ProviderMockService implements ProviderServiceInterface
             $tid,
             bin2hex(random_bytes(10)),
             $acquirer,
-            $delayToAutoSettle
+            self::$delayToAutoSettleDefault
         );
     }
 
@@ -151,7 +148,6 @@ class ProviderMockService implements ProviderServiceInterface
      */
     private function approveAndRedirect(CreatePaymentRequest $request): AuthorizationResponse
     {
-        $delayToAutoSettle = $request->merchantSettings()->delayToAutoSettle() ?? self::$delayToAutoSettleDefault;
 
         $tid = bin2hex(random_bytes(10));
 
@@ -159,7 +155,7 @@ class ProviderMockService implements ProviderServiceInterface
             $request->paymentId(),
             bin2hex(random_bytes(10)),
             $tid,
-            $delayToAutoSettle
+            self::$delayToAutoSettleDefault
         );
 
         return AuthorizationResponse::redirect(

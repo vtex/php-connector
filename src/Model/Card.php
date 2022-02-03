@@ -13,7 +13,7 @@ class Card
     private $csc;
     private $expirationMonth;
     private $expirationYear;
-    private $document; // in docs, it's nested with expiration key
+    private $document;
 
     public function __construct(
         string $holder,

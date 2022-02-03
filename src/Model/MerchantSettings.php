@@ -4,7 +4,6 @@ namespace PhpConnector\Model;
 
 class MerchantSettings
 {
-    private $delayToAutoSettle;
     private $countryOfOperation;
     private $refundType;
 
@@ -20,20 +19,15 @@ class MerchantSettings
     ];
 
     public function __construct(
-        ?int $delayToAutoSettle = null,
         ?int $countryOfOperation = null,
         ?int $refundType = null
     ) {
-        $this->delayToAutoSettle = $delayToAutoSettle;
         $this->countryOfOperation = $countryOfOperation;
         $this->refundType = $refundType;
     }
 
     public static function fromArray(array $array): self
     {
-        $key1 = array_search("DelayToAutoSettle - in seconds", array_column($array, 'name'));
-        $delayToAutoSettle = is_int($key1) ? $array[$key1]["value"] : null;
-
         $key2 = array_search("Country of operation", array_column($array, 'name'));
         $countryOfOperation = is_int($key2) ? $array[$key2]["value"] : null;
 
@@ -41,15 +35,9 @@ class MerchantSettings
         $refundType = is_int($key3) ? $array[$key3]["value"] : null;
 
         return new self(
-            $delayToAutoSettle,
             $countryOfOperation,
             $refundType
         );
-    }
-
-    public function delayToAutoSettle(): ?int
-    {
-        return $this->delayToAutoSettle;
     }
 
     public function countryOfOperation(): ?int

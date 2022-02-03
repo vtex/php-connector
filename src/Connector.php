@@ -58,10 +58,6 @@ class Connector
             ],
             "customFields" => [
                 [
-                    "name" => "DelayToAutoSettle - in seconds",
-                    "type" => "text"
-                ],
-                [
                     "name" => "Country of operation",
                     "type" => "select",
                     "options" => [
