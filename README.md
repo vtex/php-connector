@@ -102,7 +102,11 @@ Here is a snippet of the response for the endpoints defined:
 				}
 			]
 		}
-	]
+	],
+    "autoSettleDelay" : {
+        "minimum": "0",
+        "maximum": "360"
+    }
 }
 ```
 
@@ -179,3 +183,7 @@ The gateway also expects to receive the final authorization response on the `cal
 	"paymentUrl": "http://php-connector.herokuapp.com/installments.php?paymentId=5291d5e5-5d0d-4f5c-9677-034138956a08"
 }
 ```
+
+## Custom Auto Capture Feature
+
+By setting the interval for `autoSettleDelay`, along with the option `useAutoSettleOptions` to be set on the connector configuration (in the publication process), we allow the merchants to configure different behaviors for the Payment Capture. If the option "Scheduled" is chosen, a value between 0 and 360 (as limited by our manifest) can be set for the capture. This field has precedence over the delayToAutoSettle value sent on the authorization response.

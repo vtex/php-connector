@@ -97,6 +97,10 @@ class Connector
                         ]
                     ]
                 ]
+            ],
+            "autoSettleDelay" => [
+                "minimum" => "0",
+                "maximum" => "360"
             ]
         ];
         $this->returnWithDefaultHeaders(200, $manifest);
