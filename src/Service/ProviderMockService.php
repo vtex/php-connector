@@ -122,7 +122,7 @@ class ProviderMockService implements ProviderServiceInterface
         $tid = bin2hex(random_bytes(10));
 
         return AuthorizationResponse::pending(
-            $request,
+            $request->paymentId(),
             $tid,
             $this->denyPayment($request, $tid),
         );
@@ -133,7 +133,7 @@ class ProviderMockService implements ProviderServiceInterface
         $tid = bin2hex(random_bytes(10));
 
         return AuthorizationResponse::pending(
-            $request,
+            $request->paymentId(),
             bin2hex(random_bytes(10)),
             $this->approveCreditCardPayment($request, $tid),
         );
