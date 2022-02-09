@@ -13,6 +13,9 @@ use PhpConnector\Model\CreatePaymentRequest;
  * externally, and therefore this is a use case of *Purchase Redirect Flow*, as the
  * provider needs to redirect the customer to a different page in order to get extra information from
  * the customer before authorizing the purchase payment.
+ *
+ * The payment method "myRedirectPaymentMethod" will follow the redirect flow to use the
+ * custom installments.
  */
 class CustomInstallmentsService
 {
