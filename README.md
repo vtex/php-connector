@@ -166,6 +166,8 @@ The Redirect purchase flow is used when customers confirm the payment option in 
 
 In our example, we set up a simple form in which the customer can select a custom number of installments for the payment. The installments options are dynamic, based on the payment amount.
 
+Dynamic installments is not a feature available in the SmartCheckout template, so it needs to be done externally, redirecting the customer to a different page in order to get extra information before authorizing the purchase payment.
+
 To implement this flow, we created a new payment method called "myRedirectPaymentMethod". The initial authorization response for this method sends the status "undefined" along with a `paymentUrl`.
 
 This paymentUrl should reference the payment somehow, here we went simply with setting the query string `paymentId= {{paymentId}}`.

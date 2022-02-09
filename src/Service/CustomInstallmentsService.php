@@ -5,9 +5,14 @@ namespace PhpConnector\Service;
 use PhpConnector\Model\CreatePaymentRequest;
 
 /**
- * Custom Installments Service will render the view for selecting the installments for a given
+ * CustomInstallmentsService will render the view for selecting the installments for a given
  * payment, and will also persist the selected option.
  * The number of installments available for selection is dynamic, based on the payment value.
+ *
+ * Having dynamic installments is not available in the SmartCheckout template, so it needs to be done
+ * externally, and therefore is a use case that fits into the *Purchase Redirect Flow*, as the
+ * provider needs to redirect the customer to a different page in order to get extra information from
+ * the customer before authorizing the purchase payment.
  */
 class CustomInstallmentsService
 {
