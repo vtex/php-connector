@@ -10,7 +10,7 @@ use PhpConnector\Model\CreatePaymentRequest;
  * The number of installments available for selection is dynamic, based on the payment value.
  *
  * Having dynamic installments is not available in the SmartCheckout template, so it needs to be done
- * externally, and therefore is a use case that fits into the *Purchase Redirect Flow*, as the
+ * externally, and therefore this is a use case of *Purchase Redirect Flow*, as the
  * provider needs to redirect the customer to a different page in order to get extra information from
  * the customer before authorizing the purchase payment.
  */
