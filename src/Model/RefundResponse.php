@@ -2,6 +2,10 @@
 
 namespace PhpConnector\Model;
 
+/**
+ * RefundResponse class provides different constructors to initialize
+ * the refund response. It also provides a method to format the response accordingly.
+ */
 class RefundResponse
 {
     private $paymentId;
@@ -69,6 +73,11 @@ class RefundResponse
         );
     }
 
+    /**
+     * Formats the response properties as expected by the PPP specification
+     *
+     * @return array
+     */
     public function asArray(): array
     {
         $formattedResponse = [

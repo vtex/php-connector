@@ -2,6 +2,11 @@
 
 namespace PhpConnector\Model;
 
+/**
+ * MerchantSettings Class models the custom fields values, received  as the
+ * the merchantSettings field on the request body of each POST method.
+ * with the expected type.
+ */
 class MerchantSettings
 {
     private $countryOfOperation;

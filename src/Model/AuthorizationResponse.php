@@ -2,7 +2,10 @@
 
 namespace PhpConnector\Model;
 
-
+/**
+ * AuthorizationResponse class provides different constructors to initialize
+ * the authorization response. It also provides a method to format the response accordingly.
+ */
 class AuthorizationResponse
 {
     private $paymentId;
@@ -148,6 +151,11 @@ class AuthorizationResponse
         );
     }
 
+    /**
+     * Formats the response properties as expected by the PPP specification
+     *
+     * @return array
+     */
     public function asArray(): array
     {
         if ($this->paymentMethod === "creditCard" && $this->status === "approved") {

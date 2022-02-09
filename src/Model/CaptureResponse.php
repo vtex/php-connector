@@ -2,6 +2,10 @@
 
 namespace PhpConnector\Model;
 
+/**
+ * CaptureResponse class provides different constructors to initialize
+ * the settlement response. It also provides a method to format the response accordingly.
+ */
 class CaptureResponse
 {
     private $paymentId;
@@ -55,6 +59,11 @@ class CaptureResponse
         );
     }
 
+    /**
+     * Formats the response properties as expected by the PPP specification
+     *
+     * @return array
+     */
     public function asArray(): array
     {
         $formattedResponse = [

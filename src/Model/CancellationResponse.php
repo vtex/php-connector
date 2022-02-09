@@ -4,6 +4,10 @@ namespace PhpConnector\Model;
 
 use PhpConnector\Model\CancellationRequest;
 
+/**
+ * CancellationResponse class provides different constructors to initialize
+ * the cancellation response. It also provides a method to format the response accordingly.
+ */
 class CancellationResponse
 {
     private $paymentId;
@@ -52,6 +56,11 @@ class CancellationResponse
         );
     }
 
+    /**
+     * Formats the response properties as expected by the PPP specification
+     *
+     * @return array
+     */
     public function asArray(): array
     {
         $formattedResponse = [

@@ -8,6 +8,9 @@ use PhpConnector\Model\CancellationRequest;
 use PhpConnector\Model\CaptureRequest;
 use PhpConnector\Model\RefundRequest;
 
+/**
+ * Connector is the Controller class that will deliver the required action
+ */
 class Connector
 {
     private $providerService = null;

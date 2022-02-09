@@ -11,6 +11,10 @@ use PhpConnector\Model\CaptureResponse;
 use PhpConnector\Model\RefundRequest;
 use PhpConnector\Model\RefundResponse;
 
+/**
+ * ProviderMockService implements most of our Provider processing logic, mocking the responses for
+ * each payment request. It also handles the TestSuite flows.
+ */
 class ProviderMockService implements ProviderServiceInterface
 {
     private static $creditCardFlow = [
