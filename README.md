@@ -1,4 +1,4 @@
-# PHP Payment Connector
+# Payment Connector
 
 ## Disclaimer
 
