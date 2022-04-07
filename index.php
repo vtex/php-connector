@@ -28,6 +28,9 @@ $credentials = [
     "token" => $headers["X-Vtex-Api-Apptoken"] ?? null
 ];
 
+error_log("appKey: {$credentials["X-VTEX-API-AppKey"]}");
+error_log("appToken: {$credentials["X-Vtex-Api-Apptoken"]}");
+
 $clientIsTestSuite = false;
 
 if (isset($headers["X-Vtex-Api-Is-Testsuite"]) && $headers["X-Vtex-Api-Is-Testsuite"] === 'true') {
