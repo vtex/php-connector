@@ -28,8 +28,8 @@ $credentials = [
     "token" => $headers["X-Vtex-Api-Apptoken"] ?? null
 ];
 
-error_log("appKey: {$credentials["X-VTEX-API-AppKey"]}");
-error_log("appToken: {$credentials["X-Vtex-Api-Apptoken"]}");
+error_log("appKey: {$credentials["key"]}");
+error_log("appToken: {$credentials["token"]}");
 
 $clientIsTestSuite = false;
 
