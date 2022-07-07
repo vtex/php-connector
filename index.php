@@ -21,11 +21,13 @@ set_exception_handler(function ($e) {
     exit;
 });
 
+
+$headers = array_change_key_case($headers, CASE_UPPER);
 // test suite is sending headers different from expected, should be X-VTEX-API-AppKey &
 // X-VTEX-API-AppToken
 $credentials = [
-    "key" => $headers["X-Vtex-Api-Appkey"] ?? null,
-    "token" => $headers["X-Vtex-Api-Apptoken"] ?? null
+    "key" => $headers["X-VTEX-API-APPKEY"] ?? null,
+    "token" => $headers["X-VTEX-API-APPTOKEN"] ?? null
 ];
 
 error_log("appKey: {$credentials["key"]}");
@@ -33,7 +35,7 @@ error_log("appToken: {$credentials["token"]}");
 
 $clientIsTestSuite = false;
 
-if (isset($headers["X-Vtex-Api-Is-Testsuite"]) && $headers["X-Vtex-Api-Is-Testsuite"] === 'true') {
+if (isset($headers["X-VTEX-API-IS-TESTSUITE"]) && $headers["X-VTEX-API-IS-TESTSUITE"] === 'true') {
     $clientIsTestSuite = true;
 }
 
