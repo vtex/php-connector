@@ -35,7 +35,7 @@ class CancellationRequest
         return new self(
             $array['paymentId'],
             $array['requestId'],
-            $array['authorizationId'],
+            isset($array['authorizationId']) ? $array['authorizationId'] : null,
             $array['sandboxMode'] ?? false,
             isset($array['merchantSettings']) ? MerchantSettings::fromArray($array['merchantSettings']) : new MerchantSettings(),
         );

@@ -234,7 +234,7 @@ class CreatePaymentRequest
             isset($array['installmentsInterestRate']) ? (float) $array['installmentsInterestRate'] : null,
             isset($array['installmentsValue']) ? (float) $array['installmentsValue'] : null,
             $array['deviceFingerprint'],
-            $array['ipAddress'],
+            isset($array['ipAddress']) ? $array['ipAddress'] : null,
             $card,
             isset($array['shippingValue']) ? (float) $array['shippingValue'] : null,
             isset($array['taxValue']) ? (float) $array['taxValue'] : null,
